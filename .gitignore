@@ -14,5 +14,13 @@ venv/
 # Pytest cache
 .pytest_cache/
 
-# Secrets (Spotify credentials etc.) - never commit
+# Raw downloads (rebuilt by python -m src.catalog build)
+data/raw/
+
+# Logs
+logs/
+
+# Secrets and tokens (Spotify credentials etc.) - never commit
 .env
+.cache
+.streamlit/secrets.toml

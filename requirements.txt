@@ -1,5 +1,7 @@
 pandas
-pytest
-streamlit
-python-dotenv
+numpy
+model2vec
 certifi
+python-dotenv
+streamlit
+pytest

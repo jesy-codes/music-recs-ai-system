@@ -15,6 +15,54 @@ Replace this paragraph with your own summary of what your version does.
 
 ---
 
+## Setup
+
+Requires Python 3.10+ (tested on 3.14, including Intel Macs).
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Run the tests (no network or API keys needed):
+
+```bash
+python -m pytest
+```
+
+## Song catalog and embeddings
+
+The repo already includes the built catalog, so you only need this step to rebuild it or change the settings.
+
+```bash
+python -m src.catalog build                    # download raw data if missing, build CSV + embeddings
+python -m src.catalog build --per-genre 80     # bigger catalog
+python -m src.catalog build --skip-embeddings  # CSV only
+python -m src.catalog build --force-download   # fetch the raw dataset again
+```
+
+What it does:
+
+1. **Downloads** the [Spotify Tracks Dataset](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset) (114,000 rows, BSD license) to `data/raw/` (not committed).
+2. **Merges duplicates.** The raw data repeats a song once per genre and often under several track IDs; these are merged into one row per song with all its genres (81,206 unique songs).
+3. **Samples** the 50 most popular songs from each of 30 genres (jazz, indie, chill, acoustic, rock, metal, …) → **1,500 songs** in `data/songs.csv`. Genres outside the list, such as k-pop, are left out on purpose to test the "not in catalog" guardrail.
+4. **Adds vibe tags** from audio features, e.g. energy < 0.4 → "calm, mellow, chill"; acousticness > 0.6 → "acoustic, organic" (rules in `vibe_tags()` in `src/catalog.py`).
+5. **Embeds** one sentence per song ("Blue Moon by Billie Holiday. Genres: blues, jazz. Album: … Feels: calm, mellow, chill, acoustic.") with the static model [`minishlab/potion-base-8M`](https://huggingface.co/minishlab/potion-base-8M) → `data/embeddings.npy` (1,500 × 256). Static embeddings run on numpy alone, so no PyTorch is needed. That matters because PyTorch has no builds for Intel Macs on current Python versions, and it keeps the cloud deployment small. Override the model with the `EMBEDDING_MODEL` environment variable.
+6. **Records** the model name and a hash of `songs.csv` in `data/catalog_meta.json`. If the CSV changes without rebuilding the embeddings, loading fails with a clear error instead of returning wrong results.
+
+Logs go to the console and `logs/app.log`. Common errors and fixes:
+
+| Error | Fix |
+|---|---|
+| `Couldn't download the dataset` | Check your connection, or download `dataset.csv` from the link above and save it as `data/raw/spotify_tracks.csv` |
+| `Couldn't load embedding model` | The first build needs internet to download the model (~30 MB); later runs use the cache |
+| `data/songs.csv changed since the embeddings were built` | Run `python -m src.catalog build` |
+
+> The sections below describe the earlier profile-based version and will be rewritten for the agent.
+
+---
+
 ## How The System Works
 
 Real-world recommendations are based on 2 different methodologies: content-based (how similar the song is to the songs recommended) and collaborative-filtering (finding users with similar songs). 
