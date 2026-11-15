@@ -20,7 +20,7 @@ data/raw/
 # Logs
 logs/
 
-# Secrets and tokens
+# Secrets and tokens (Spotify credentials etc.) - never commit
 .env
 .cache
 .streamlit/secrets.toml

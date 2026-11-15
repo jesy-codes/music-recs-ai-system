@@ -2,5 +2,6 @@ pandas
 numpy
 model2vec
 certifi
+python-dotenv
 streamlit
 pytest
