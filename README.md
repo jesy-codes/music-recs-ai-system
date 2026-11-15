@@ -104,6 +104,28 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+### Spotify Developer App (optional)
+
+1. Go to <https://developer.spotify.com/dashboard>, log in, and click **Create app**.
+   - **Redirect URI:** `http://127.0.0.1:8888/callback` (Spotify no longer accepts `localhost`).
+   - **APIs used:** check **Web API**.
+2. Open the app's **Settings** page and copy the **Client ID**, then click **View client secret** and copy that too.
+3. Create your local env file and paste both values in:
+
+```bash
+cp .env.example .env
+```
+
+   `.env` is git-ignored, so your secret never gets committed. Only `.env.example` (placeholders) is tracked.
+
+4. Check the credentials. This loads `.env` and asks Spotify for an app token:
+
+```bash
+python -m src.spotify_config
+```
+
+   It prints `Spotify credentials are valid.` on success, or logs an `ERROR` saying which variable is missing, still a placeholder, or rejected by Spotify, and exits with code 1.
+
 ### Running Tests
 
 Run the starter tests with:

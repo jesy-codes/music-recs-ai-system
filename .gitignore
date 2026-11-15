@@ -13,3 +13,6 @@ venv/
 
 # Pytest cache
 .pytest_cache/
+
+# Secrets (Spotify credentials etc.) - never commit
+.env
