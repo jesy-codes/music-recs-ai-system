@@ -1,4 +1,4 @@
-# 🎵 Music Recommender Simulation
+#  Music Recommender Demo - Final Project
 
 ## Project Summary
 
