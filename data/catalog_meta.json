@@ -1,0 +1,7 @@
+{
+  "embedding_model": "minishlab/potion-base-8M",
+  "catalog_sha256": "03c23d857c45c447743c9ab229abeb3b9ea2f2d6d6a75cb2227e757737cd7943",
+  "n_songs": 1500,
+  "dim": 256,
+  "built_at": "2026-11-15T01:35:50+00:00"
+}

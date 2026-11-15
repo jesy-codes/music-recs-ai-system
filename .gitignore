@@ -13,3 +13,14 @@ venv/
 
 # Pytest cache
 .pytest_cache/
+
+# Raw downloads (rebuilt by python -m src.catalog build)
+data/raw/
+
+# Logs
+logs/
+
+# Secrets and tokens
+.env
+.cache
+.streamlit/secrets.toml
