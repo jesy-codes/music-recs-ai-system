@@ -114,15 +114,40 @@ def test_vote_can_change_mind(session):
     assert session.playlist() == [] and song_id in session.rejected
 
 
-def test_refine_round_uses_one_gemini_call_for_explanations(retriever):
-    from src.explainer import ReasonList
+def _picks_first_candidates(n):
+    """Fake Gemini reranker: picks the first n candidate ids from the prompt."""
+    import json
+    from src.reranker import Pick, PickList
+
+    def answer(prompt):
+        candidates = json.loads(prompt.split("Candidate songs (choose from these only): ", 1)[1])
+        return PickList(picks=[Pick(song_id=c["song_id"], reason=f"gemini picked {c['song_id']}") for c in candidates[:n]])
+    return answer
+
+
+def test_session_uses_two_gemini_calls_plan_then_rerank(retriever):
     from src.planner import PlanModel
-    fake = FakeLLM(PlanModel=PlanModel(on_topic=True, search_text="calm jazz", genres=["jazz"]),
-                   ReasonList=ReasonList(reasons=[]))
+    fake = FakeLLM(PlanModel=PlanModel(on_topic=True, search_text="calm music"), PickList=_picks_first_candidates(2))
     session = PlaylistSession(PlaylistAgent(retriever, fake), k=2)
-    first = session.start("calm jazz")
-    session.refine({first.songs[0].song_id: True})
-    assert [c[0] for c in fake.calls] == ["PlanModel", "ReasonList", "ReasonList"]   # no second planner call
+    first = session.start("calm music")
+    second = session.refine({first.songs[0].song_id: True})
+    assert [c[0] for c in fake.calls] == ["PlanModel", "PickList"]       # no second planner call, no explainer
+    assert second.explain_source.startswith("gemini-rerank")
+    assert any(step.name == "rerank" for step in second.trace)
+
+
+def test_rerank_prompt_has_votes_and_only_unseen_candidates(retriever):
+    from src.planner import PlanModel
+    fake = FakeLLM(PlanModel=PlanModel(on_topic=True, search_text="calm music"), PickList=_picks_first_candidates(2))
+    session = PlaylistSession(PlaylistAgent(retriever, fake), k=2)
+    first = session.start("calm music")
+    liked, disliked = first.songs[0], first.songs[1]
+    session.refine({liked.song_id: True, disliked.song_id: False})
+    prompt = fake.calls[-1][1]
+    assert liked.title in prompt.split("Songs they rejected")[0]          # in the 👍 section
+    assert disliked.title in prompt.split("Songs they rejected")[1].split("Candidate songs")[0]
+    candidates = prompt.split("Candidate songs (choose from these only): ", 1)[1]
+    assert f'"song_id": {liked.song_id},' not in candidates               # shown songs are never candidates
 
 
 def test_baseline_session_ignores_feedback(retriever):

@@ -1,13 +1,17 @@
-"""The playlist agent: plan -> retrieve -> rank -> self-check -> (adjust and retry) -> explain.
+"""The playlist agent: plan -> retrieve -> rank -> self-check -> (adjust and retry) -> present.
 
     guardrail ──► plan (Gemini, or rules) ──► retrieve ──► rank ──► self-check
                                                  ▲                      │ fails
                                                  └──── adjust (≤ 2) ◄───┘
                                                                         │ passes (or out of retries)
-                                                               explain ─► result
+                             refine rounds only: Gemini reranker ──►  self-check ──► present
 
-Every step is appended to `trace` and logged, so a run can be inspected afterwards (CLI --trace,
-logs/app.log, and the evaluation in Phase 6).
+Gemini is called at most twice per session: once to plan round 1, and once in the refine round to choose
+the next songs from 30 candidates using the listener's 👍/👎 (src/reranker.py). Reasons shown in round 1
+come from templates built from catalog data.
+
+Every step is appended to `trace` and logged, so a run can be inspected afterwards (CLI --trace and
+logs/app.log).
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from src.llm import LLMClient
 from src.planner import plan_request
 from src.query import SearchQuery
 from src.ranker import Recommendation, rank
+from src.reranker import POOL_SIZE, rerank
 from src.retriever import DEFAULT_CANDIDATES, Retriever
 
 logger = logging.getLogger(__name__)
@@ -44,6 +49,7 @@ class Attempt:
     songs: list[Recommendation]
     check: CheckResult
     settings: str
+    pool: list[Recommendation] = field(default_factory=list)   # wider candidate list for the reranker
 
 
 @dataclass
@@ -55,7 +61,7 @@ class AgentResult:
     songs: list[Recommendation] = field(default_factory=list)
     reasons: dict[int, str] = field(default_factory=dict)
     plan_source: str = ""             # "gemini" or "rules"
-    explain_source: str = ""          # "gemini", "template" or "gemini+template"
+    explain_source: str = ""          # "template", "gemini-rerank" or "gemini-rerank+agent" (or gemini explainer)
     attempts: list[Attempt] = field(default_factory=list)
     trace: list[Step] = field(default_factory=list)
 
@@ -108,11 +114,15 @@ class PlaylistAgent:
 
     def search_round(self, request: str, query: SearchQuery, plan_source: str, exclude: list[int],
                      trace: list[Step], query_vector: Optional[np.ndarray] = None,
-                     ok_message: str = "This is the recommended playlist, but let us know if it looks good:") -> AgentResult:
-        """Steps 3-4 for an already-planned query: retrieve, rank, self-check (with retries), explain.
+                     ok_message: str = "This is the recommended playlist, but let us know if it looks good:",
+                     feedback: Optional[tuple[list[Recommendation], list[Recommendation]]] = None,
+                     explain_with_llm: bool = False) -> AgentResult:
+        """Steps 3-4 for an already-planned query: retrieve, rank, self-check (with retries), present.
 
         The feedback loop calls this directly for refine rounds, reusing the round-1 plan (no new planner
-        call) with a feedback-adjusted query vector.
+        call) with a feedback-adjusted query vector, and passes `feedback=(liked, rejected)` so Gemini
+        can choose the final songs from a wider candidate pool (the reranker).
+        `explain_with_llm` turns on the optional Gemini explainer; by default reasons come from templates.
         """
         # 3. Retrieve -> rank -> self-check, adjusting and retrying when the check fails.
         attempts: list[Attempt] = []
@@ -128,7 +138,8 @@ class PlaylistAgent:
             self._step(trace, "rank", f"attempt {number}: " + ", ".join(f"{s.title} - {s.artist}" for s in songs))
             result = check(query, songs)
             self._step(trace, "check", f"attempt {number}: {result.summary()}")
-            attempts.append(Attempt(number, songs, result, settings))
+            pool = rank(candidates, query, self.retriever.embeddings, k=POOL_SIZE) if feedback is not None else []
+            attempts.append(Attempt(number, songs, result, settings, pool))
             if result.passed or number > self.max_retries:
                 break
 
@@ -158,9 +169,34 @@ class PlaylistAgent:
             return AgentResult(request=request, status="empty", message=message, query=query,
                                plan_source=plan_source, attempts=attempts, trace=trace)
 
-        # 4. Explain (grounded in catalog data) and present.
-        explained = explain(query, best.songs, self.vibe_tags, self.llm)
-        self._step(trace, "explain", f"{explained.source}" + (f" (dropped invented ids {explained.dropped_ids})" if explained.dropped_ids else ""))
+        # 4. Refine rounds: let Gemini choose from a wider pool using the votes; the self-check still applies.
+        songs, reasons, reasons_source = best.songs, None, ""
+        if feedback is not None and self.llm is not None and len(best.pool) > query.k:
+            liked, rejected = feedback
+            picked = rerank(self.llm, query, liked, rejected, best.pool, query.k, self.vibe_tags)
+            if picked.fallback_reason:
+                self._step(trace, "rerank", f"Gemini unavailable ({picked.fallback_reason}); keeping the agent's picks")
+            else:
+                verdict = check(query, picked.songs)
+                note = f" (dropped ids not in the candidates: {picked.dropped_ids})" if picked.dropped_ids else ""
+                if verdict.passed or len(verdict.problems) <= len(best.check.problems):
+                    self._step(trace, "rerank", f"Gemini chose {picked.from_gemini} of {len(best.pool)} candidates: "
+                               + ", ".join(f"{s.title} - {s.artist}" for s in picked.songs) + note)
+                    self._step(trace, "check", f"Gemini's picks: {verdict.summary()}")
+                    best = Attempt(best.number, picked.songs, verdict, best.settings + ", Gemini picks", best.pool)
+                    songs, reasons = picked.songs, picked.reasons
+                    reasons_source = "gemini-rerank" if picked.from_gemini == query.k else "gemini-rerank+agent"
+                else:
+                    self._step(trace, "rerank", f"Gemini's picks failed the self-check ({verdict.summary()}); "
+                               "keeping the agent's picks" + note)
+        elif feedback is not None and self.llm is None:
+            self._step(trace, "rerank", "offline mode; the agent's own picks are used")
+
+        # 5. Reasons (grounded in catalog data) and present.
+        if reasons is None:
+            explained = explain(query, songs, self.vibe_tags, self.llm if explain_with_llm else None)
+            reasons, reasons_source = explained.reasons, explained.source
+            self._step(trace, "explain", f"{explained.source}" + (f" (dropped invented ids {explained.dropped_ids})" if explained.dropped_ids else ""))
 
         if best.check.passed:
             status, message = "ok", ok_message
@@ -168,9 +204,9 @@ class PlaylistAgent:
             status = "partial"
             message = ("Here's the closest I could find, but not everything you asked for could be met: "
                        + best.check.summary() + ".")
-        self._step(trace, "present", f"{status}: {len(best.songs)} songs")
+        self._step(trace, "present", f"{status}: {len(songs)} songs")
         return AgentResult(
-            request=request, status=status, message=message, query=query, songs=best.songs,
-            reasons=explained.reasons, plan_source=plan_source, explain_source=explained.source,
+            request=request, status=status, message=message, query=query, songs=songs,
+            reasons=reasons, plan_source=plan_source, explain_source=reasons_source,
             attempts=attempts, trace=trace,
         )

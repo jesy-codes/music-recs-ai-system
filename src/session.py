@@ -1,7 +1,7 @@
 """A listening session: round 1 from the request, then refine rounds driven by 👍/👎 votes.
 
-    start("chill jazz and indie")   -> 5 songs                      (Gemini: plan + explain = 2 calls)
-    refine({253: True, 92: False})  -> playlist so far + 5 new songs (Gemini: explain only = 1 call)
+    start("chill jazz and indie")   -> 5 songs                      (Gemini: plan = 1 call)
+    refine({253: True, 92: False})  -> playlist so far + 5 new songs (Gemini: picks 5 of 30 candidates = 1 call)
     playlist()                      -> only the 👍 songs
 
 Refine rounds reuse the round-1 plan; the votes adjust it in code (src/feedback.py), so they don't need
@@ -116,6 +116,7 @@ class PlaylistSession:
         result = self.agent.search_round(
             self.request, query, self.plan_source, exclude=list(self.shown), trace=trace,
             query_vector=vector, ok_message=REFINE_MESSAGE.format(n=query.k),
+            feedback=(list(self.liked.values()), list(self.rejected.values())) if self.use_feedback else None,
         )
         self.rounds.append(result)
         self.carried.append(list(self.liked.values()))
