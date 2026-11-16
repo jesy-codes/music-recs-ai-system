@@ -1,6 +1,7 @@
 pandas
 numpy
 model2vec
+rank_bm25
 certifi
 python-dotenv
 streamlit

@@ -13,7 +13,7 @@ An AI playlist builder. You describe a vibe in plain English (*"recommend someth
 
 AI features covered: **retrieval-augmented generation**, an **agentic workflow** (plan → act → check → retry), and a **reliability and testing system**. The full plan is in [PLAN.md](PLAN.md).
 
-**Status:** Phase 0 (setup checks) and Phase 1 (song catalog and embeddings) are done. The agent, feedback loop, Streamlit app and evaluation are in progress; see the phases in [PLAN.md](PLAN.md).
+**Status:** Phases 0–2 are done: setup checks, the song catalog and embeddings, and search and ranking (try it with the CLI below). The Gemini agent, feedback loop, Streamlit app and evaluation are next; see the phases in [PLAN.md](PLAN.md).
 
 ---
 
@@ -89,10 +89,10 @@ flowchart TB
 | Component | What it does | Status |
 |---|---|---|
 | **Catalog builder** (`src/catalog.py`) | Downloads the Spotify Tracks Dataset, merges duplicates, samples 16,120 songs, adds vibe tags, builds embeddings | ✅ Built |
-| **Input guardrail** | Rejects empty or off-topic requests; flags genres not in the catalog instead of returning weak matches | Planned |
-| **Planner** | Gemini turns the request into a structured search query; a rule-based parser takes over without an API key | Planned |
-| **Retriever** | Embedding similarity plus BM25 keyword search, combined by rank | Planned |
-| **Ranker** | Scores closeness to the planned audio features and uses MMR so the 5 picks aren't near-duplicates | Planned |
+| **Input guardrail** | Rejects empty or off-topic requests; flags genres not in the catalog instead of returning weak matches | Partly built: empty requests rejected, unknown genres flagged with the closest match |
+| **Planner** | Gemini turns the request into a structured search query; a rule-based parser (`src/parser.py`) takes over without an API key | Rule-based parser ✅; Gemini planned |
+| **Retriever** | Embedding similarity plus BM25 keyword search, combined by reciprocal rank fusion (`src/retriever.py`) | ✅ Built |
+| **Ranker** | 0.6 × retrieval + 0.3 × audio-feature fit + 0.1 × genre match, then MMR so picks aren't near-duplicates, one song per artist, and requested genres shared fairly (`src/ranker.py`) | ✅ Built |
 | **Self-check** | Verifies genres, energy range, count and artist variety; adjusts the query and retries up to 2 times | Planned |
 | **Explainer** | Gemini writes one reason per song using only that song's data; any song ID not in the catalog is dropped | Planned |
 | **Feedback update** | Moves the search toward 👍 songs and away from 👎 songs; never suggests a song twice | Planned |
@@ -129,6 +129,47 @@ Run the tests (no network or API keys needed):
 ```bash
 python -m pytest
 ```
+
+## Try a search (CLI)
+
+Search the catalog from the terminal. No API key needed: this uses the rule-based parser.
+
+```bash
+python -m src.cli "something chill, with jazz and indie music"
+python -m src.cli "high energy workout metal, no rap" -k 8
+python -m src.cli "chill jazz" --exclude 253 92        # skip songs already shown (catalog ids)
+python -m src.cli "chill jazz" --json                   # machine-readable output
+python -m src.cli "chill jazz" --verbose                # show each step's log on the console
+```
+
+Example output (Spotify links trimmed):
+
+```text
+Request: something chill, with jazz and indie music
+Plan:    genres jazz, indie; moods chill; energy 0.00-0.45
+Picked 5 of 200 candidates:
+
+1. Some Kind Of Wonderful - Peter Cincotti   [jazz]   score 1.00
+   id 253 | genre: jazz; feels calm, mellow, chill; energy 0.29 (in target 0.00-0.45)
+2. Sunday Vibe - The BREED   [chill; jazz]   score 0.99
+   id 92 | genre: jazz; energy 0.46 (near target 0.00-0.45)
+3. Moon River - Louis Armstrong   [jazz]   score 0.94
+   id 278 | genre: jazz; feels calm, mellow, chill; energy 0.14 (in target 0.00-0.45)
+4. Pause - Prateek Kuhad   [folk; indie; indie-pop; singer-songwriter]   score 0.78
+   id 713 | genre: indie; feels calm, mellow, chill; energy 0.28 (in target 0.00-0.45)
+5. Light On - Maggie Rogers   [indie; indie-pop]   score 0.79
+   id 969 | genre: indie; energy 0.57 (near target 0.00-0.45)
+```
+
+Song 5 is a bit more energetic than the plan asked for: the ranker treats the energy range as a preference, not a hard filter. Catching picks like this is the job of the agent's self-check in Phase 3.
+
+How one search works:
+
+1. **Parse** (`src/parser.py`): keyword rules turn the request into a plan: genres ("hip hop" → `hip-hop`, "no rap" → exclude `hip-hop`), moods ("chill" → energy 0–0.45, "sad" → valence 0–0.4), "acoustic", "instrumental", and a song count ("8 songs"). Genres the catalog doesn't have, like k-pop, get a note naming the closest genre.
+2. **Retrieve** (`src/retriever.py`): scores all 16,120 songs by embedding similarity and by BM25 keywords, combines the two rankings with reciprocal rank fusion, drops excluded songs and genres, and keeps the top 200.
+3. **Rank** (`src/ranker.py`): scores each candidate (0.6 retrieval, 0.3 audio-feature fit, 0.1 genre match), then picks the final songs with MMR, at most one song per artist and a fair share for each requested genre. Each song gets reasons built only from its catalog data.
+
+Exit codes: `0` songs found, `1` catalog files missing or out of date, `2` empty request, `3` no songs matched. Every step is logged to `logs/app.log`.
 
 ## Song catalog and embeddings
 

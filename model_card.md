@@ -43,6 +43,48 @@ The highest possible score is 5 points. For example, take a listener who loves r
 
 **Changes from the starter logic:** the starter profile had one genre, one mood and one energy level. I added a second favorite genre so that related music can earn partial credit, and separate morning and night moods because what people want to hear can change during the day. I also lowered the favorite genre from 2 points to 1.5 so that it counts the same as a mood match and doesn't outweigh it. Later I doubled the weight of energy (from up to 1 point to up to 2), so that among songs with the same labels, the one closest to the listener's energy wins more clearly. I also tried halving genre, but then the top song matched the listener's favorite genre only 10–23% of the time, so I changed genre back to 1.5.
 
+### Update: picking a varied list with MMR
+
+The new playlist agent (see the README) no longer just takes the top five scores. After scoring, `select_mmr()` in `src/ranker.py` picks the final songs with **MMR (Maximal Marginal Relevance)**, a classic search technique (Carbonell and Goldstein, 1998) for choosing results that are relevant but not repetitive.
+
+**The problem it fixes.** Sorting by score alone puts near-copies next to each other: five slow piano jazz ballads, or three songs by the same artist. Each song is a good match on its own, but the list as a whole is dull. The old version showed this problem: the same filler songs appeared for different listeners because "nothing in the scoring adds variety" (see section 7).
+
+**How it works.** MMR picks songs one at a time. For each remaining candidate it computes:
+
+```text
+value = λ × score − (1 − λ) × similarity to the most similar song already picked
+```
+
+- **score** is how well the song matches the request: 0.6 × search match + 0.3 × audio-feature fit + 0.1 × genre match.
+- **similarity** is the cosine similarity between the two songs' description embeddings (0 = unrelated, 1 = the same).
+- **λ (lambda) = 0.75** sets the balance. 1.0 would mean pure score and 0.0 pure variety; 0.75 keeps the score as the main factor.
+
+The candidate with the highest value is picked, and the process repeats until the list is full.
+
+**Two extra rules** on top of plain MMR:
+
+1. **At most one song per artist** in a round.
+2. **A fair share for each requested genre.** For "jazz and indie" with 3 songs, each genre can fill up to 2 places (3 ÷ 2, rounded up). While a requested genre is below its share, songs from it get +0.1 and other songs get −0.1.
+
+MMR only considers the top 60 candidates by score, plus the best 15 from each requested genre, so a song with a weak match can't win just by being different.
+
+**A real example:** *"chill jazz and indie, 3 songs"*. The first two picks are Sunday Vibe (jazz, score 1.00) and Take Five (jazz, 0.95). For the third place:
+
+| Candidate | Score | Similarity to picks | Plain MMR | Genre rule | Final value |
+|---|---|---|---|---|---|
+| Moon River (jazz) | 0.94 | 0.72 | 0.75 × 0.94 − 0.25 × 0.72 = 0.527 | jazz already has 2 of 2 → −0.1 | 0.427 |
+| Light On (indie) | 0.77 | 0.70 | 0.75 × 0.77 − 0.25 × 0.70 = 0.402 | indie has 0 of 2 → +0.1 | **0.502** ✅ |
+
+Light On wins, so the list has two jazz songs and one indie song instead of three jazz songs.
+
+**What this example also shows:**
+
+- **Here the genre rule decided, not the similarity penalty.** Plain MMR alone would still have picked Moon River. The embeddings come from short text descriptions that share the same template ("… by … Genres: … Feels: …"), so most songs score between 0.69 and 0.72 against each other, and the similarity penalty barely separates them. A model trained on audio, or more varied descriptions, would give MMR more to work with.
+- **Variety can cost accuracy.** Light On has energy 0.57, above the 0–0.45 range the plan asked for "chill". The agent's self-check (Phase 3) is meant to catch picks like this.
+- **λ and the ±0.1 bonus were chosen by hand**, not tuned on data. The evaluation (Phase 6) will test whether other values give better lists.
+
+**Why it matters for bias.** MMR is a simple guard against the filter bubble and the repeated-filler problem from the old version: every round spreads across artists and requested genres instead of returning the closest cluster of near-identical songs. It does not add discovery *outside* what the listener asked for; that would need an exploration step, which is listed as possible future work.
+
 ---
 
 ## 4. Data  
