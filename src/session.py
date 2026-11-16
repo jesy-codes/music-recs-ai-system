@@ -45,6 +45,8 @@ class PlaylistSession:
         self.shown: dict[int, Recommendation] = {}
         self.liked: dict[int, Recommendation] = {}      # insertion order = playlist order
         self.rejected: dict[int, Recommendation] = {}
+        self.carried: list[list[Recommendation]] = []   # per round: the 👍 songs carried into it ("playlist so far")
+        self.reasons_by_id: dict[int, str] = {}
         self.base_query: Optional[SearchQuery] = None
         self.base_vector: Optional[np.ndarray] = None
         self.plan_source = ""
@@ -55,7 +57,9 @@ class PlaylistSession:
         result = self.agent.run(request, k=self.k)
         self.request = request
         self.rounds = [result]
+        self.carried = [[]]
         self.shown, self.liked, self.rejected = {}, {}, {}
+        self.reasons_by_id = {}
         if result.status in ("ok", "partial") and result.query is not None:
             self.base_query = result.query
             self.base_vector = self.agent.retriever.embed_query(result.query.semantic_text())
@@ -114,6 +118,7 @@ class PlaylistSession:
             query_vector=vector, ok_message=REFINE_MESSAGE.format(n=query.k),
         )
         self.rounds.append(result)
+        self.carried.append(list(self.liked.values()))
         self._remember(result)
         return result
 
@@ -123,6 +128,11 @@ class PlaylistSession:
         """The final playlist: only songs with a 👍, in the order they were liked."""
         return list(self.liked.values())
 
+    def rounds_liked_before(self, index: int) -> list[Recommendation]:
+        """The 👍 songs that were carried into round `index` (shown as "your playlist so far")."""
+        return self.carried[index] if 0 <= index < len(self.carried) else []
+
     def _remember(self, result: AgentResult) -> None:
         for song in result.songs:
             self.shown[song.song_id] = song
+            self.reasons_by_id[song.song_id] = result.reasons.get(song.song_id, "; ".join(song.reasons))
