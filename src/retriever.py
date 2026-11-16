@@ -59,8 +59,13 @@ class Retriever:
         embeddings, meta = load_embeddings(catalog)
         return cls(catalog, embeddings, load_encoder(meta["embedding_model"]))
 
-    def semantic_scores(self, text: str) -> np.ndarray:
-        query_vector = embed_texts([text], self.encoder)[0]
+    def embed_query(self, text: str) -> np.ndarray:
+        return embed_texts([text], self.encoder)[0]
+
+    def semantic_scores(self, text: str, query_vector: Optional[np.ndarray] = None) -> np.ndarray:
+        """Cosine similarity of every song to the request (or to a given vector, e.g. after feedback)."""
+        if query_vector is None:
+            query_vector = self.embed_query(text)
         return self.embeddings @ query_vector
 
     def keyword_scores(self, text: str) -> np.ndarray:
@@ -70,13 +75,17 @@ class Retriever:
         return np.asarray(self.bm25.get_scores(tokens), dtype=float)
 
     def search(self, query: SearchQuery, n_candidates: int = DEFAULT_CANDIDATES,
-               exclude_ids: Optional[Iterable[int]] = None) -> pd.DataFrame:
+               exclude_ids: Optional[Iterable[int]] = None,
+               query_vector: Optional[np.ndarray] = None) -> pd.DataFrame:
         """Return up to n_candidates songs ranked by fused score, skipping excluded songs and genres.
+
+        `query_vector` replaces the embedding of the request text; the feedback loop passes a vector
+        moved toward liked songs and away from rejected ones.
 
         The result keeps the catalog columns plus: row (index into the embeddings), semantic, keyword,
         fused (RRF, scaled so the best candidate is 1.0).
         """
-        semantic = self.semantic_scores(query.semantic_text())
+        semantic = self.semantic_scores(query.semantic_text(), query_vector)
         keyword = self.keyword_scores(query.keyword_text())
 
         sem_rank = np.empty(len(semantic), dtype=int)

@@ -13,7 +13,7 @@ An AI playlist builder. You describe a vibe in plain English (*"recommend someth
 
 AI features covered: **retrieval-augmented generation**, an **agentic workflow** (plan → act → check → retry), and a **reliability and testing system**. The full plan is in [PLAN.md](PLAN.md).
 
-**Status:** Phases 0–3 are done: setup checks, the song catalog, search and ranking, and the agent loop (Gemini planner, self-check with retries, grounded explanations, guardrails). Try it with the CLI below. The feedback loop, Streamlit app and evaluation are next; see the phases in [PLAN.md](PLAN.md).
+**Status:** Phases 0–4 are done: setup checks, the song catalog, search and ranking, the agent loop (Gemini planner, self-check with retries, grounded explanations, guardrails), and the 👍/👎 feedback loop with a simulated-user evaluation. Try it with the CLI below. The Streamlit app and the full evaluation are next; see the phases in [PLAN.md](PLAN.md).
 
 ---
 
@@ -95,7 +95,7 @@ flowchart TB
 | **Ranker** | 0.6 × retrieval + 0.3 × audio-feature fit + 0.1 × genre match, then MMR so picks aren't near-duplicates, one song per artist, and requested genres shared fairly (`src/ranker.py`) | ✅ Built |
 | **Self-check** | Verifies genres, energy range, count and artist variety; adjusts the query and retries up to 2 times (`src/checker.py`, `src/agent.py`) | ✅ Built |
 | **Explainer** | Gemini writes one reason per song using only that song's data; any song ID not in the catalog is dropped (`src/explainer.py`) | ✅ Built |
-| **Feedback update** | Moves the search toward 👍 songs and away from 👎 songs; never suggests a song twice | Planned |
+| **Feedback update** | Moves the search toward 👍 songs and away from 👎 songs; never suggests a song twice (`src/feedback.py`, `src/session.py`) | ✅ Built |
 
 ### Data flow
 
@@ -251,6 +251,81 @@ How one request works (`src/agent.py`):
 
 Exit codes: `0` songs shown, `1` catalog files missing or out of date, `2` request rejected by a guardrail, `3` no songs matched. Every step is logged to `logs/app.log`.
 
+## Feedback loop: 👍/👎 and one refine round
+
+After round 1 you vote on the songs. The agent keeps the 👍 songs as **your playlist so far**, shows **5 new songs** shaped by your votes, and the final playlist has **only 👍 songs**.
+
+```bash
+python -m src.cli "something chill, with jazz and indie music" --interactive
+python -m src.cli "something chill, with jazz and indie music" --like 278 92 253 --dislike 973 648
+```
+
+In `--interactive` mode, type votes like `+278 +92 -973` (`+` = 👍, `-` = 👎), then `done`.
+
+**How votes change the search** (`src/feedback.py`). This is *relevance feedback*, not fine-tuning or reinforcement learning: no model changes, only this session's search, and it's discarded afterwards.
+
+1. **Query vector (Rocchio):** `new = 1.0 × original + 0.7 × mean(👍 songs) − 0.3 × mean(👎 songs)`, so the embedding search moves toward what you liked.
+2. **Energy and mood targets** shift halfway toward the 👍 songs' average. With no target in the plan and 2+ 👍 songs, a target is created around their average (±0.2).
+3. **Genres:** a requested genre is dropped if all its songs got 👎 (none 👍), and a genre shared by 2+ 👍 songs (none 👎) starts being favored.
+4. Songs already shown are never suggested again.
+
+**API budget.** Refine rounds reuse the round-1 plan, so they don't call the Gemini planner again:
+
+| Round | Gemini calls |
+|---|---|
+| Round 1 | 2 (plan + explanations) |
+| Refine round | 1 (explanations for the 5 new songs) |
+| **Whole session (default)** | **3** |
+
+To stay within free-tier limits, sessions allow **one refine round** by default (`MAX_REFINE_ROUNDS=1` in `.env` to change it). If the quota is hit anyway, explanations fall back to templates and Gemini is skipped for 60 seconds; the songs themselves don't depend on Gemini after round 1.
+
+Example (real run with Gemini planning; the 2 indie songs were 👎, the 3 jazz songs 👍):
+
+```text
+Here's your playlist so far, plus 5 new songs based on your feedback:
+
+Your playlist so far (3): 👍
+  - Moon River - Louis Armstrong   (id 278)
+  - Sunday Vibe - The BREED   (id 92)
+  - Some Kind Of Wonderful - Peter Cincotti   (id 253)
+
+New suggestions:
+1. Stella By Starlight - Ella Fitzgerald   [blues; jazz]
+2. Take Five - The Dave Brubeck Quartet   [jazz]
+3. Backdrop - Konteks   [chill; jazz]
+4. On The Street Where You Live - Nat King Cole   [jazz]
+5. Feelin' Good - Zmeyev   [chill; jazz]
+
+Agent steps:
+   1. feedback  3 liked, 2 rejected; search moved toward liked songs; energy 0.00-0.45 -> 0.04-0.48;
+                mood/valence any -> 0.23-0.63; stopped favoring indie (all its songs were rejected)
+   4. check     attempt 1: valence outside 0.23-0.63: Nuit Douce (0.16)
+   5. adjust    use the energy/mood targets as hard filters
+   8. check     attempt 2: passed
+```
+
+### Does feedback help? Simulated users
+
+`python -m src.simulator` runs 6 simulated listeners offline (no API calls, same numbers every run). Each makes a request but has a **hidden taste** the request doesn't say, and votes 👍/👎 on every song by that rule. The baseline gets the same votes but ignores them (it only skips songs already shown).
+
+```text
+Persona             Hidden taste                                               With feedback          Baseline
+Acoustic purist     only acoustic songs (acousticness ≥ 0.6)                    60% → 100% → 100% →  80%   60% →  80% →  80% →  80%
+Jazz head           only jazz, no indie                                         60% → 100% → 100% → 100%   60% →  60% →  60% →  60%
+Latin party         only latin or reggae                                         0% →   0% →   0% →   0%    0% →   0% →   0% →   0%
+Rainy-day crier     very sad and acoustic (valence < 0.3, acousticness > 0.5)   20% →  40% →  60% →  40%   20% →  40% →   0% →   0%
+Rock gym-goer       only rock, metal or alt-rock                                40% → 100% →  80% → 100%   40% →   0% →   0% →  40%
+No-vocals studier   only instrumental (instrumentalness > 0.5)                 100% →  80% →  40% → 100%  100% →  60% →  80% →  60%
+
+Average                                                                         47% →  70% →  63% →  70%   47% →  40% →  37% →  40%
+```
+
+**Round 2 (the one refine round users get): 70% liked with feedback vs 40% without (+30 points).** What the table also shows:
+
+- **Feedback can't find what it never showed.** "Upbeat music for a party" never surfaces latin songs, so the Latin persona rejects everything and there's nothing to move toward. Feedback narrows; it doesn't explore.
+- **More rounds aren't always better.** After round 2 the gains level off or dip (No-vocals studier drops to 40% in round 3) as the closest matches run out. One refine round captures most of the benefit, which supports the 1-round limit.
+- **Learning genres from 👍 helped most for broad requests.** Adding it raised the Rock gym-goer's round 2 from 40% to 100%, and the average from 63% to 70%.
+
 ## Song catalog and embeddings
 
 The repo already includes the built catalog, so you only need this step to rebuild it or change the settings.
@@ -311,6 +386,8 @@ python -m src.spotify_config
 - **Loose genre labels:** the dataset's genres are noisy (e.g. Earth, Wind & Fire's "September" is tagged jazz), and some songs are marked instrumental even though they have vocals.
 - **Rule-based vibe tags:** "calm" or "sad" come from fixed thresholds on audio features, not from listening or lyrics.
 - **Limited genres:** 30 genres are included; requests for others (e.g. k-pop) can only get the closest match.
+- **Free-tier rate limits are real.** During testing, Gemini returned 429 (quota) after a few dozen calls in one sitting, and once took 13 seconds to answer. The app keeps working (rules and template explanations take over), but explanations get plainer.
+- **Feedback narrows, it doesn't explore.** If none of the first 5 songs fit, there's nothing to move toward (see the Latin persona above).
 - **Gemini plans vary a little between runs.** Even at temperature 0, the same request can get a slightly different plan, so 1–2 of the 5 songs may change (seen with "k-pop for a road trip"). The rules-only mode always gives the same results.
 - **Explanations can drift.** Gemini only gets catalog facts, and invented song ids are dropped, but a sentence can still add a vague detail that isn't in the data (one test run described a song as having "smooth vocals"). The evaluation will count how often this happens.
 - **Speed:** each Gemini call took about 4 seconds in testing, so a request with Gemini takes 8–10 seconds; offline it takes about 3.
