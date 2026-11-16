@@ -130,8 +130,8 @@ tests/                  # pytest, LLM mocked
 | 3. Agent loop ✅ | LLM planner, self-check + retry, grounded explainer, guardrails | Logs show plan → retrieve → check → (retry) → present |
 | 4. Feedback ✅ | Rocchio feedback, exclude seen songs, simulated user; **1 refine round by default** to fit free-tier API limits | Round 2 like rate: 70% with feedback vs 40% baseline (6 simulated users) |
 | 5. UI + export ✅ | Streamlit app, Spotify export, CSV fallback | End-to-end in the browser (also covered by Streamlit AppTest) |
-| 6. Eval + tests | Golden set, `run_eval.py`, pytest suite | Metrics table produced; tests green |
-| 7. Docs | README, model card, diagram, sample runs, demo script | Rubric checklist below all ✅ |
+| 6. Eval + tests (pending: Gemini quota) | Golden set, `run_eval.py`, pytest suite | Metrics table produced; tests green |
+| 7. Docs ✅ | README, model card, diagram, sample runs, demo script | Rubric checklist below all ✅ |
 | 8. Share (optional) | Deploy the Streamlit app to Streamlit Community Cloud | Public URL works, with Spotify export off and Gemini usage capped |
 
 The order is deliberate: phases 1–2 alone already give a working (non-LLM) demo, so if time runs short, each later phase adds features to a demo that already works.
@@ -172,7 +172,6 @@ The order is deliberate: phases 1–2 alone already give a working (non-LLM) dem
 - Limitations and biases: genre coverage, Western/English skew in the data, filter bubble from feedback, popularity bias, mood labels derived by rule
 - **Reflection and ethics:** filter bubbles vs. discovery, effects on artist exposure, privacy (no profiles stored, session-only state), sending user text to an LLM API (on Gemini's free tier, Google may use what you send to improve its products), honesty about AI-written explanations, what we'd do differently
 
-**ai_interactions.md:** record how the coding agent was used (counts toward the Agentic Workflow stretch section).
 
 ## 7. Five-minute presentation outline
 

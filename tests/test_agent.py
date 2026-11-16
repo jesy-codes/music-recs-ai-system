@@ -213,17 +213,24 @@ def test_agent_rejects_off_topic_with_gemini(retriever):
     assert [c[0] for c in fake.calls] == ["PlanModel"]          # no explain call after rejection
 
 
-def test_agent_uses_gemini_plan_and_reasons(retriever):
+def test_round_one_uses_gemini_plan_and_template_reasons(retriever):
+    fake = FakeLLM(PlanModel=PlanModel(on_topic=True, search_text="calm jazz", genres=["jazz"],
+                                       energy_min=0.0, energy_max=0.45))
+    result = PlaylistAgent(retriever, fake).run("something for a quiet evening", k=2)
+    assert result.plan_source == "gemini" and result.explain_source == "template"
+    assert [c[0] for c in fake.calls] == ["PlanModel"]                # round 1 = one Gemini call
+
+
+def test_optional_gemini_explainer_still_works(retriever):
     def reasons(prompt):
         import json
         ids = [s["song_id"] for s in json.loads(prompt.split("Songs:\n", 1)[1])]
         return ReasonList(reasons=[SongReason(song_id=i, reason=f"why {i}") for i in ids])
 
-    fake = FakeLLM(PlanModel=PlanModel(on_topic=True, search_text="calm jazz", genres=["jazz"],
-                                       energy_min=0.0, energy_max=0.45),
-                   ReasonList=reasons)
-    result = PlaylistAgent(retriever, fake).run("something for a quiet evening", k=2)
-    assert result.plan_source == "gemini" and result.explain_source == "gemini"
+    agent = PlaylistAgent(retriever, FakeLLM(ReasonList=reasons))
+    query = SearchQuery(text="calm jazz", genres=["jazz"], k=2)
+    result = agent.search_round("calm jazz", query, "rules", [], [], explain_with_llm=True)
+    assert result.explain_source == "gemini"
     assert all(result.reasons[s.song_id] == f"why {s.song_id}" for s in result.songs)
 
 

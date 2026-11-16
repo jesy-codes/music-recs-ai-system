@@ -117,7 +117,7 @@ def plan_to_query(plan: PlanModel, request: str, known_genres: set[str], k: int)
 
 def plan_request(request: str, known_genres: Sequence[str], llm: Optional[LLMClient] = None, k: int = 5) -> PlanResult:
     """Plan with Gemini when available; otherwise (or on any failure) use the rule-based parser."""
-    fallback_reason = "offline mode (no Gemini API key)"
+    fallback_reason = "offline mode, Gemini not used"
     if llm is not None:
         try:
             system = SYSTEM_PROMPT.format(genres=", ".join(sorted(known_genres)))
