@@ -102,7 +102,7 @@ def test_missing_refresh_token_explains_setup(monkeypatch):
 
 @pytest.fixture
 def app(monkeypatch):
-    monkeypatch.setattr(export, "spotify_configured", lambda: False)
+    monkeypatch.setattr(export, "spotify_status", lambda: (False, "not set up"))
     return AppTest.from_file(str(Path(__file__).resolve().parent.parent / "src" / "app.py"), default_timeout=120).run()
 
 

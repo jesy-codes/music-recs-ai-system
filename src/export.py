@@ -97,13 +97,21 @@ def _credentials() -> tuple[str, str]:
     return client_id, client_secret
 
 
-def spotify_configured() -> bool:
-    """True when the owner token is set up, so the share-link button can be offered."""
+def spotify_status() -> tuple[bool, str]:
+    """(ready, reason). Ready when the app credentials AND the owner's refresh token are set."""
     try:
         _credentials()
     except ExportError:
-        return False
-    return bool(os.getenv("SPOTIFY_REFRESH_TOKEN", "").strip())
+        return False, "Spotify export isn't set up: SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET are missing."
+    if not os.getenv("SPOTIFY_REFRESH_TOKEN", "").strip():
+        return False, ("Spotify isn't connected yet: the app owner needs to run "
+                       "`python -m src.export authorize` once to log in and save SPOTIFY_REFRESH_TOKEN.")
+    return True, ""
+
+
+def spotify_configured() -> bool:
+    """True when the owner token is set up, so the share-link button can be offered."""
+    return spotify_status()[0]
 
 
 def _request(url: str, *, method: str = "GET", data: Optional[bytes] = None, headers: Optional[dict] = None,
