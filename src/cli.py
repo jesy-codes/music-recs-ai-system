@@ -4,6 +4,7 @@ Usage:
     python -m src.cli "something chill, with jazz and indie music"
     python -m src.cli "chill jazz and indie" --interactive               # vote 👍/👎, get 5 more, see the playlist
     python -m src.cli "chill jazz and indie" --like 253 92 --dislike 278  # one refine round, no prompts
+    python -m src.cli "chill jazz and indie" --interactive --save          # also save the playlist as CSV in exports/
     python -m src.cli "sad acoustic songs for a rainy day" -k 8 --trace   # show every agent step
     python -m src.cli "upbeat latin, no reggae" --exclude 12 345          # skip songs already shown
     python -m src.cli "chill jazz" --offline                              # rule-based planner, no Gemini
@@ -25,6 +26,7 @@ from typing import Callable, Optional, Sequence
 
 from src.agent import AgentResult, PlaylistAgent
 from src.catalog import CatalogError
+from src.export import ExportError, save_csv
 from src.llm import get_client
 from src.query import MAX_K, MIN_K
 from src.ranker import Recommendation
@@ -117,6 +119,7 @@ def main(argv: Sequence[str] | None = None, ask: Callable[[str], str] = input) -
     parser.add_argument("--interactive", action="store_true", help="Vote on songs and get a refined round")
     parser.add_argument("--like", type=int, nargs="*", default=[], metavar="ID", help="Songs from round 1 to 👍 (runs one refine round)")
     parser.add_argument("--dislike", type=int, nargs="*", default=[], metavar="ID", help="Songs from round 1 to 👎 (runs one refine round)")
+    parser.add_argument("--save", action="store_true", help="Save the final playlist as CSV in exports/")
     parser.add_argument("--offline", action="store_true", help="Don't call Gemini; use the rule-based planner and template reasons")
     parser.add_argument("--trace", action="store_true", help="Print every agent step after the results")
     parser.add_argument("--json", action="store_true", help="Print JSON instead of text")
@@ -148,7 +151,7 @@ def main(argv: Sequence[str] | None = None, ask: Callable[[str], str] = input) -
         return EXIT_CODES.get(first.status, 0)
     if args.interactive:
         run_interactive(session, args.trace, ask)
-        return 0
+        return save_playlist(session) if args.save else 0
 
     votes = {**{i: True for i in args.like}, **{i: False for i in args.dislike}}
     try:
@@ -159,6 +162,16 @@ def main(argv: Sequence[str] | None = None, ask: Callable[[str], str] = input) -
     print("\n" + "=" * 60 + "\n")
     print(format_result(second, args.trace, playlist_so_far=session.playlist()))
     print(format_playlist(session.playlist()))
+    return save_playlist(session) if args.save else 0
+
+
+def save_playlist(session: PlaylistSession) -> int:
+    try:
+        path = save_csv(session.playlist())
+    except ExportError as error:
+        print(f"Not saved: {error}", file=sys.stderr)
+        return 0
+    print(f"\nSaved to {path}")
     return 0
 
 

@@ -1,0 +1,28 @@
+# "Aura blue" theme, from the Figma design (Vibe Playlist Builder – UI, v3 Aura blue).
+# Colors match the Figma variables in the "Aura" mode; extra effects (glows, glass cards) live in src/styles.py.
+
+[theme]
+base = "dark"
+primaryColor = "#3B82F6"
+backgroundColor = "#06080D"
+secondaryBackgroundColor = "#0F1420"
+textColor = "#F4F2FA"
+linkColor = "#93C5FD"
+borderColor = "#232A38"
+blueColor = "#3B82F6"
+greenColor = "#10B981"
+grayColor = "#A19DB3"
+# Montserrat: free Google Font, closest stand-in for Proxima Nova
+font = "Montserrat:https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap, sans-serif"
+headingFont = "Montserrat, sans-serif"
+headingFontWeights = 700
+baseRadius = "14px"
+buttonRadius = "999px"
+showWidgetBorder = true
+
+[server]
+headless = true
+
+[client]
+# Demo: hide the Deploy button and developer menu items
+toolbarMode = "minimal"

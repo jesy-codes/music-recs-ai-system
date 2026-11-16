@@ -24,3 +24,6 @@ logs/
 .env
 .cache
 .streamlit/secrets.toml
+
+# Exported playlists
+exports/

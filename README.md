@@ -13,7 +13,7 @@ An AI playlist builder. You describe a vibe in plain English (*"recommend someth
 
 AI features covered: **retrieval-augmented generation**, an **agentic workflow** (plan → act → check → retry), and a **reliability and testing system**. The full plan is in [PLAN.md](PLAN.md).
 
-**Status:** Phases 0–4 are done: setup checks, the song catalog, search and ranking, the agent loop (Gemini planner, self-check with retries, grounded explanations, guardrails), and the 👍/👎 feedback loop with a simulated-user evaluation. Try it with the CLI below. The Streamlit app and the full evaluation are next; see the phases in [PLAN.md](PLAN.md).
+**Status:** Phases 0–5 are done: setup checks, the song catalog, search and ranking, the agent loop (Gemini planner, self-check with retries, grounded explanations, guardrails), the 👍/👎 feedback loop with a simulated-user evaluation, and the Streamlit app with CSV and Spotify export. Run the app (`streamlit run src/app.py`) or the CLI below. The full evaluation and final docs are next; see the phases in [PLAN.md](PLAN.md).
 
 ---
 
@@ -155,6 +155,27 @@ If Gemini fails during a run, the agent logs the reason and falls back to the ru
 - **Bad key or unknown model:** fallback, and Gemini isn't called again in that session. Listed models aren't always callable (in Nov 2026, `gemini-2.5-flash` was listed but returned "not found"), so the error message points to `--list-models`.
 - **Response that doesn't match the expected JSON:** fallback. Note: on the free tier, Google may use what you send to improve its products, so don't type personal information into requests.
 
+## Run the app (Streamlit)
+
+```bash
+streamlit run src/app.py
+```
+
+Then open <http://localhost:8501>.
+
+1. **Describe a vibe** in the chat box, or click one of the example requests.
+2. **Round 1:** 5 songs, each with a Spotify preview player, a one-line reason and 👍/👎.
+3. **Refine my playlist** (enabled after at least one vote): your playlist so far (👍 songs, still changeable) plus 5 new songs shaped by your votes. Round 1 is kept on screen, locked. One refine round per session.
+4. **Looks good, I'm done:** the final playlist (👍 songs only) with:
+   - **Download CSV** (title, artist, genres, Spotify link, track id), always available;
+   - **Get Spotify playlist link**, if the owner has set up Spotify export (below). It creates a public playlist in the *app owner's* account and shows its link; visitors open it and save it if they want. Nothing is ever added to a visitor's account. The name is fixed ("Vibe Mix <date> <time>"), never the visitor's text, since it's public under the owner's name.
+
+The app is a clean demo page: no sidebar or developer toolbar. **Start over** appears under the final playlist, and typing a new request in the chat box starts a new session at any time. If Gemini is unavailable for a request (quota, error), the round says so and the offline planner is used. After 10 requests in one visit, the app switches to offline mode to protect the free-tier quota. The agent's step-by-step trace is still available in the CLI (`--trace`) and in `logs/app.log`.
+
+**Design ("Aura blue").** The look was designed in Figma first (file "Vibe Playlist Builder – UI", frames "v3 Aura blue") and then implemented: a near-black background with slowly drifting blue, emerald and cyan glows, frosted-glass song cards, a blue-to-cyan gradient for the main action, round 👍/👎 buttons and Montserrat (a free stand-in for Proxima Nova). Theme basics live in `.streamlit/config.toml`; the glows, cards, chips and buttons are CSS in `src/styles.py`, with every piece of song data HTML-escaped. The glow animation is turned off for visitors who set "reduce motion" in their system settings.
+
+Spotify previews use Spotify's embed player (`open.spotify.com/embed/track/<id>`): visitors who aren't logged in hear a short preview, logged-in Premium users can play the full song.
+
 ## Try the agent (CLI)
 
 ```bash
@@ -164,6 +185,7 @@ python -m src.cli "chill jazz" --exclude 253 92     # skip songs already shown (
 python -m src.cli "chill jazz" --trace              # print every agent step
 python -m src.cli "chill jazz" --offline            # rule-based planner, no Gemini
 python -m src.cli "chill jazz" --json               # machine-readable output
+python -m src.cli "chill jazz" --interactive --save # vote, then save the playlist to exports/*.csv
 ```
 
 Example (offline mode, Spotify links trimmed). The self-check catches a song outside the energy target and the agent retries:
@@ -377,6 +399,20 @@ python -m src.spotify_config
 ```
 
    It prints `Spotify credentials are valid.` on success, or logs an `ERROR` saying which variable is missing, still a placeholder, or rejected by Spotify, and exits with code 1.
+
+5. **Optional: enable "Get Spotify playlist link"** in the app. Run this once as the app owner (needs Spotify Premium, required by Development Mode):
+
+```bash
+python -m src.export authorize
+```
+
+   It opens Spotify's login page, asks you to allow the app to create playlists, and saves `SPOTIFY_REFRESH_TOKEN` to your `.env`. Check it with:
+
+```bash
+python -m src.export check
+```
+
+   The app then creates playlists in your account with `POST /me/playlists` and `POST /playlists/{id}/items` (the endpoints after Spotify's February 2026 changes). If Spotify answers 403, make sure your account is listed under **User Management** in the dashboard. Without this step the button is simply disabled and the CSV download still works.
 
 ---
 
