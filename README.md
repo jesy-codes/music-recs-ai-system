@@ -1,11 +1,11 @@
-# Music Recommender Demo - Final Project
+#  Music Recommender Demo - Final Project
 
 ## Project Summary
 
 An AI playlist builder. You describe a vibe in plain English (*"recommend something chill, with jazz and indie music"*), and an agent:
 
 1. **Plans** a search: turns the request into genres, mood and an energy range.
-2. **Retrieves** matching songs from a 1,500-song catalog using embeddings and keyword search (RAG: it never invents songs).
+2. **Retrieves** matching songs from a 16,120-song catalog using embeddings and keyword search (RAG: it never invents songs).
 3. **Checks its own work** (right genres? energy in range? enough variety?) and retries if the picks miss.
 4. **Shows 5 songs** with a preview and a one-line reason each.
 5. **Learns from your feedback.** You give each song 👍 or 👎; the next round shows your playlist so far plus 5 new songs closer to what you liked.
@@ -29,7 +29,7 @@ flowchart TB
         direction TB
         RAW[("Spotify Tracks<br/>Dataset, 114k rows")]
         BUILD["Catalog builder<br/>dedupe, sample genres,<br/>vibe tags, embeddings"]
-        DB[("Catalog<br/>1,500 songs +<br/>embeddings")]
+        DB[("Catalog<br/>16,120 songs +<br/>embeddings")]
         RAW --> BUILD --> DB
     end
 
@@ -88,7 +88,7 @@ flowchart TB
 
 | Component | What it does | Status |
 |---|---|---|
-| **Catalog builder** (`src/catalog.py`) | Downloads the Spotify Tracks Dataset, merges duplicates, samples 1,500 songs, adds vibe tags, builds embeddings | ✅ Built |
+| **Catalog builder** (`src/catalog.py`) | Downloads the Spotify Tracks Dataset, merges duplicates, samples 16,120 songs, adds vibe tags, builds embeddings | ✅ Built |
 | **Input guardrail** | Rejects empty or off-topic requests; flags genres not in the catalog instead of returning weak matches | Planned |
 | **Planner** | Gemini turns the request into a structured search query; a rule-based parser takes over without an API key | Planned |
 | **Retriever** | Embedding similarity plus BM25 keyword search, combined by rank | Planned |
@@ -136,7 +136,7 @@ The repo already includes the built catalog, so you only need this step to rebui
 
 ```bash
 python -m src.catalog build                    # download raw data if missing, build CSV + embeddings
-python -m src.catalog build --per-genre 80     # bigger catalog
+python -m src.catalog build --per-genre 50     # small, fast catalog (1,500 songs)
 python -m src.catalog build --skip-embeddings  # CSV only
 python -m src.catalog build --force-download   # fetch the raw dataset again
 ```
@@ -145,9 +145,9 @@ What it does:
 
 1. **Downloads** the [Spotify Tracks Dataset](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset) (114,000 rows, BSD license) to `data/raw/` (not committed).
 2. **Merges duplicates.** The raw data repeats a song once per genre and often under several track IDs; these are merged into one row per song with all its genres (81,206 unique songs).
-3. **Samples** the 50 most popular songs from each of 30 genres (jazz, indie, chill, acoustic, rock, metal, …) → **1,500 songs** in `data/songs.csv`. Genres outside the list, such as k-pop, are left out on purpose to test the "not in catalog" guardrail.
+3. **Samples** up to 700 of the most popular songs from each of 30 genres (jazz, indie, chill, acoustic, rock, metal, …) → **16,120 songs** in `data/songs.csv`. Many genres have fewer than 700 songs left after merging duplicates (jazz has 304, latin 232), so they contribute everything they have. Genres outside the list, such as k-pop, are left out on purpose to test the "not in catalog" guardrail.
 4. **Adds vibe tags** from audio features, e.g. energy < 0.4 → "calm, mellow, chill"; acousticness > 0.6 → "acoustic, organic" (rules in `vibe_tags()` in `src/catalog.py`).
-5. **Embeds** one sentence per song ("Blue Moon by Billie Holiday. Genres: blues, jazz. Album: … Feels: calm, mellow, chill, acoustic.") with the static model [`minishlab/potion-base-8M`](https://huggingface.co/minishlab/potion-base-8M) → `data/embeddings.npy` (1,500 × 256). Static embeddings run on numpy alone, so no PyTorch is needed. That matters because PyTorch has no builds for Intel Macs on current Python versions, and it keeps the cloud deployment small. Override the model with the `EMBEDDING_MODEL` environment variable.
+5. **Embeds** one sentence per song ("Blue Moon by Billie Holiday. Genres: blues, jazz. Album: … Feels: calm, mellow, chill, acoustic.") with the static model [`minishlab/potion-base-8M`](https://huggingface.co/minishlab/potion-base-8M) → `data/embeddings.npy` (16,120 × 256, about 16 MB). Static embeddings run on numpy alone, so no PyTorch is needed. That matters because PyTorch has no builds for Intel Macs on current Python versions, and it keeps the cloud deployment small. Override the model with the `EMBEDDING_MODEL` environment variable.
 6. **Records** the model name and a hash of `songs.csv` in `data/catalog_meta.json`. If the CSV changes without rebuilding the embeddings, loading fails with a clear error instead of returning wrong results.
 
 Logs go to the console and `logs/app.log`. Common errors and fixes:

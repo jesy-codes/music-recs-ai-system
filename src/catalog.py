@@ -58,7 +58,7 @@ SELECTED_GENRES: tuple[str, ...] = (
     "pop", "rock", "alt-rock", "hip-hop", "electronic", "dance", "edm", "latin", "metal",
     "country", "funk", "reggae", "trip-hop",
 )
-DEFAULT_PER_GENRE = 50
+DEFAULT_PER_GENRE = 700  # many genres have fewer songs available, so most take everything they have
 DEFAULT_SEED = 42
 
 RAW_REQUIRED_COLUMNS = (
