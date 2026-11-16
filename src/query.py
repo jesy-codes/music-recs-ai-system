@@ -44,7 +44,8 @@ class Range:
 class SearchQuery:
     """Everything the retriever and ranker need, derived from one user request."""
 
-    text: str                                   # the original request, used for semantic search
+    text: str                                   # the original request
+    search_text: str = ""                       # optional rewrite for semantic search (set by the Gemini planner)
     genres: list[str] = field(default_factory=list)          # catalog genres to favor
     exclude_genres: list[str] = field(default_factory=list)  # catalog genres to drop ("no metal")
     unknown_genres: list[str] = field(default_factory=list)  # genres asked for but not in the catalog
@@ -60,9 +61,13 @@ class SearchQuery:
         self.text = self.text.strip()
         self.k = min(max(int(self.k), MIN_K), MAX_K)
 
+    def semantic_text(self) -> str:
+        """Text for embedding search: the planner's rewrite if there is one, else the request."""
+        return self.search_text.strip() or self.text
+
     def keyword_text(self) -> str:
         """Words for keyword (BM25) search: the request plus the normalized genres and moods."""
-        return " ".join([self.text, *self.genres, *self.moods])
+        return " ".join([self.semantic_text(), *self.genres, *self.moods])
 
     def summary(self) -> str:
         parts = []

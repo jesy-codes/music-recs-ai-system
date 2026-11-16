@@ -34,7 +34,7 @@ STOPWORDS = frozenset(
 
 def tokenize(text: str) -> list[str]:
     """Lowercase word tokens, keeping hyphenated genres ("indie-pop") whole and dropping filler words."""
-    return [t for t in TOKEN_PATTERN.findall(text.lower()) if t not in STOPWORDS]
+    return [t for t in TOKEN_PATTERN.findall(text.lower()) if t not in STOPWORDS and not t.isdigit()]
 
 
 class Retriever:
@@ -76,7 +76,7 @@ class Retriever:
         The result keeps the catalog columns plus: row (index into the embeddings), semantic, keyword,
         fused (RRF, scaled so the best candidate is 1.0).
         """
-        semantic = self.semantic_scores(query.text)
+        semantic = self.semantic_scores(query.semantic_text())
         keyword = self.keyword_scores(query.keyword_text())
 
         sem_rank = np.empty(len(semantic), dtype=int)

@@ -2,6 +2,8 @@ pandas
 numpy
 model2vec
 rank_bm25
+google-genai
+pydantic
 certifi
 python-dotenv
 streamlit

@@ -13,7 +13,7 @@ An AI playlist builder. You describe a vibe in plain English (*"recommend someth
 
 AI features covered: **retrieval-augmented generation**, an **agentic workflow** (plan → act → check → retry), and a **reliability and testing system**. The full plan is in [PLAN.md](PLAN.md).
 
-**Status:** Phases 0–2 are done: setup checks, the song catalog and embeddings, and search and ranking (try it with the CLI below). The Gemini agent, feedback loop, Streamlit app and evaluation are next; see the phases in [PLAN.md](PLAN.md).
+**Status:** Phases 0–3 are done: setup checks, the song catalog, search and ranking, and the agent loop (Gemini planner, self-check with retries, grounded explanations, guardrails). Try it with the CLI below. The feedback loop, Streamlit app and evaluation are next; see the phases in [PLAN.md](PLAN.md).
 
 ---
 
@@ -89,12 +89,12 @@ flowchart TB
 | Component | What it does | Status |
 |---|---|---|
 | **Catalog builder** (`src/catalog.py`) | Downloads the Spotify Tracks Dataset, merges duplicates, samples 16,120 songs, adds vibe tags, builds embeddings | ✅ Built |
-| **Input guardrail** | Rejects empty or off-topic requests; flags genres not in the catalog instead of returning weak matches | Partly built: empty requests rejected, unknown genres flagged with the closest match |
-| **Planner** | Gemini turns the request into a structured search query; a rule-based parser (`src/parser.py`) takes over without an API key | Rule-based parser ✅; Gemini planned |
+| **Input guardrail** | Rejects empty or off-topic requests; flags genres not in the catalog instead of returning weak matches | ✅ Built (`src/guardrails.py`) |
+| **Planner** | Gemini turns the request into a structured search query; a rule-based parser (`src/parser.py`) takes over without an API key | ✅ Built (`src/planner.py`) |
 | **Retriever** | Embedding similarity plus BM25 keyword search, combined by reciprocal rank fusion (`src/retriever.py`) | ✅ Built |
 | **Ranker** | 0.6 × retrieval + 0.3 × audio-feature fit + 0.1 × genre match, then MMR so picks aren't near-duplicates, one song per artist, and requested genres shared fairly (`src/ranker.py`) | ✅ Built |
-| **Self-check** | Verifies genres, energy range, count and artist variety; adjusts the query and retries up to 2 times | Planned |
-| **Explainer** | Gemini writes one reason per song using only that song's data; any song ID not in the catalog is dropped | Planned |
+| **Self-check** | Verifies genres, energy range, count and artist variety; adjusts the query and retries up to 2 times (`src/checker.py`, `src/agent.py`) | ✅ Built |
+| **Explainer** | Gemini writes one reason per song using only that song's data; any song ID not in the catalog is dropped (`src/explainer.py`) | ✅ Built |
 | **Feedback update** | Moves the search toward 👍 songs and away from 👎 songs; never suggests a song twice | Planned |
 
 ### Data flow
@@ -130,46 +130,126 @@ Run the tests (no network or API keys needed):
 python -m pytest
 ```
 
-## Try a search (CLI)
+## Gemini setup (optional)
 
-Search the catalog from the terminal. No API key needed: this uses the rule-based parser.
+The agent uses Google Gemini to plan searches and write song explanations. **Everything also works without it**: with no key, it runs in offline mode with the rule-based planner and template explanations.
+
+1. Get a free API key at <https://aistudio.google.com/apikey>.
+2. Add it to `.env` (see `.env.example`):
+
+```bash
+GEMINI_API_KEY=your-key
+GEMINI_MODEL=gemini-3.5-flash      # optional; the default, tested Nov 2026
+```
+
+3. Check which models your key can use:
+
+```bash
+python -m src.llm --list-models
+```
+
+If Gemini fails during a run, the agent logs the reason and falls back to the rules for that step, so a request never fails just because the API did:
+
+- **Server error or timeout** (Gemini returns occasional 504s): retried once after 1 second, then fallback.
+- **Quota reached (429):** fallback, and Gemini is skipped for 60 seconds instead of being called again at every step.
+- **Bad key or unknown model:** fallback, and Gemini isn't called again in that session. Listed models aren't always callable (in Nov 2026, `gemini-2.5-flash` was listed but returned "not found"), so the error message points to `--list-models`.
+- **Response that doesn't match the expected JSON:** fallback. Note: on the free tier, Google may use what you send to improve its products, so don't type personal information into requests.
+
+## Try the agent (CLI)
 
 ```bash
 python -m src.cli "something chill, with jazz and indie music"
 python -m src.cli "high energy workout metal, no rap" -k 8
-python -m src.cli "chill jazz" --exclude 253 92        # skip songs already shown (catalog ids)
-python -m src.cli "chill jazz" --json                   # machine-readable output
-python -m src.cli "chill jazz" --verbose                # show each step's log on the console
+python -m src.cli "chill jazz" --exclude 253 92     # skip songs already shown (catalog ids)
+python -m src.cli "chill jazz" --trace              # print every agent step
+python -m src.cli "chill jazz" --offline            # rule-based planner, no Gemini
+python -m src.cli "chill jazz" --json               # machine-readable output
 ```
 
-Example output (Spotify links trimmed):
+Example (offline mode, Spotify links trimmed). The self-check catches a song outside the energy target and the agent retries:
 
 ```text
 Request: something chill, with jazz and indie music
-Plan:    genres jazz, indie; moods chill; energy 0.00-0.45
-Picked 5 of 200 candidates:
+Plan (rules): genres jazz, indie; moods chill; energy 0.00-0.45
 
-1. Some Kind Of Wonderful - Peter Cincotti   [jazz]   score 1.00
-   id 253 | genre: jazz; feels calm, mellow, chill; energy 0.29 (in target 0.00-0.45)
-2. Sunday Vibe - The BREED   [chill; jazz]   score 0.99
-   id 92 | genre: jazz; energy 0.46 (near target 0.00-0.45)
-3. Moon River - Louis Armstrong   [jazz]   score 0.94
-   id 278 | genre: jazz; feels calm, mellow, chill; energy 0.14 (in target 0.00-0.45)
-4. Pause - Prateek Kuhad   [folk; indie; indie-pop; singer-songwriter]   score 0.78
-   id 713 | genre: indie; feels calm, mellow, chill; energy 0.28 (in target 0.00-0.45)
-5. Light On - Maggie Rogers   [indie; indie-pop]   score 0.79
-   id 969 | genre: indie; energy 0.57 (near target 0.00-0.45)
+This is the recommended playlist, but let us know if it looks good:
+
+1. Some Kind Of Wonderful - Peter Cincotti   [jazz]
+   genre: jazz; feels calm, mellow, chill; energy 0.29 (in target 0.00-0.45)
+   id 253
+
+2. Sunday Vibe - The BREED   [chill; jazz]
+   genre: jazz; energy 0.46 (near target 0.00-0.45)
+   id 92
+
+3. Moon River - Louis Armstrong   [jazz]
+   genre: jazz; feels calm, mellow, chill; energy 0.14 (in target 0.00-0.45)
+   id 278
+
+4. Pause - Prateek Kuhad   [folk; indie; indie-pop; singer-songwriter]
+   genre: indie; feels calm, mellow, chill; energy 0.28 (in target 0.00-0.45)
+   id 713
+
+5. Something Bout That Feeling - Devin Kennedy   [chill; indie; indie-pop]
+   genre: indie; feels calm, mellow, chill; energy 0.40 (in target 0.00-0.45)
+   id 549
+
+Agent steps:
+   1. guardrail request accepted
+   2. plan      rules: genres jazz, indie; moods chill; energy 0.00-0.45 (fallback: offline mode (no Gemini API key))
+   3. retrieve  attempt 1: searched 200 candidates -> 200 kept
+   4. rank      attempt 1: Some Kind Of Wonderful - Peter Cincotti, Sunday Vibe - The BREED, Moon River - Louis Armstrong, Pause - Prateek Kuhad, Light On - Maggie Rogers
+   5. check     attempt 1: energy outside 0.00-0.45: Light On (0.57)
+   6. adjust    use the energy/mood targets as hard filters
+   7. retrieve  attempt 2: searched 200 candidates, hard energy/mood filter (+0.0) -> 183 kept
+   8. rank      attempt 2: Some Kind Of Wonderful - Peter Cincotti, Sunday Vibe - The BREED, Moon River - Louis Armstrong, Pause - Prateek Kuhad, Something Bout That Feeling - Devin Kennedy
+   9. check     attempt 2: passed
+  10. explain   template
+  11. present   ok: 5 songs
 ```
 
-Song 5 is a bit more energetic than the plan asked for: the ranker treats the energy range as a preference, not a hard filter. Catching picks like this is the job of the agent's self-check in Phase 3.
+The same request with Gemini (`gemini-3.5-flash`). The plan and the explanations come from Gemini; every claim in the explanations comes from the catalog data passed to it (e.g. "Sunday Vibe" really is tagged instrumental and slow, instrumentalness 0.90):
 
-How one search works:
+```text
+Request: something chill, with jazz and indie music
+Plan (gemini): genres jazz, indie; moods chill; energy 0.00-0.45
 
-1. **Parse** (`src/parser.py`): keyword rules turn the request into a plan: genres ("hip hop" → `hip-hop`, "no rap" → exclude `hip-hop`), moods ("chill" → energy 0–0.45, "sad" → valence 0–0.4), "acoustic", "instrumental", and a song count ("8 songs"). Genres the catalog doesn't have, like k-pop, get a note naming the closest genre.
-2. **Retrieve** (`src/retriever.py`): scores all 16,120 songs by embedding similarity and by BM25 keywords, combines the two rankings with reciprocal rank fusion, drops excluded songs and genres, and keeps the top 200.
-3. **Rank** (`src/ranker.py`): scores each candidate (0.6 retrieval, 0.3 audio-feature fit, 0.1 genre match), then picks the final songs with MMR, at most one song per artist and a fair share for each requested genre. Each song gets reasons built only from its catalog data.
+This is the recommended playlist, but let us know if it looks good:
 
-Exit codes: `0` songs found, `1` catalog files missing or out of date, `2` empty request, `3` no songs matched. Every step is logged to `logs/app.log`.
+1. Sunday Vibe - The BREED   [chill; jazz]
+   With its chill and jazz genres and slow instrumental feel, "Sunday Vibe" by The BREED perfectly matches your request for relaxing music.
+
+2. Some Kind Of Wonderful - Peter Cincotti   [jazz]
+   Peter Cincotti's jazz track "Some Kind Of Wonderful" brings a calm, mellow, and chill vibe with a low 0.29 energy level.
+
+3. Moon River - Louis Armstrong   [jazz]
+   Louis Armstrong's jazz song "Moon River" offers a calm, mellow, and chill sound with a low energy level of 0.14.
+
+4. Favourite Ex - Maisie Peters   [indie; indie-pop]
+   If you want chill indie music, "Favourite Ex" by Maisie Peters delivers a calm, mellow acoustic vibe with low 0.18 energy.
+
+5. Pure Love - Hayley Williams   [indie; indie-pop]
+   For your indie selection, "Pure Love" by Hayley Williams brings a danceable and groovy vibe with 0.79 danceability.
+```
+
+An off-topic request is stopped by the guardrail (exit code 2). With Gemini, the planner judges it; offline, keyword rules do:
+
+```text
+Request: write my history essay about the french revolution
+
+I can only help with music recommendations (it doesn't look like a music request). Try something like 'chill jazz for studying'.
+```
+
+How one request works (`src/agent.py`):
+
+1. **Guardrail** (`src/guardrails.py`): rejects empty or over-long requests before any API call.
+2. **Plan** (`src/planner.py`): Gemini returns a JSON search plan (genres, exclusions, moods, energy/valence ranges, acoustic, instrumental, song count, and whether the request is about music at all). The plan is checked against the catalog: unknown genres are moved aside with a note, ranges are clamped to 0–1. Without Gemini, the rule-based parser (`src/parser.py`) builds the plan. Off-topic requests are rejected here. If every requested genre is missing from the catalog (e.g. "k-pop"), the closest catalog genre is searched instead and the user is told.
+3. **Retrieve** (`src/retriever.py`): embedding similarity + BM25 keywords over all 16,120 songs, fused by rank; already-shown songs and excluded genres are dropped.
+4. **Rank** (`src/ranker.py`): 0.6 retrieval + 0.3 audio-feature fit + 0.1 genre match, then MMR for variety (one song per artist, a fair share per requested genre).
+5. **Self-check** (`src/checker.py`): right number of songs? every requested genre present? energy and mood inside the targets (±0.05)? no excluded genre or repeated artist? If not, the agent adjusts and retries, at most twice: out-of-range songs → make the targets hard filters; too few songs → widen the ranges by 0.1; missing genre → search 3× more candidates. If nothing passes, it shows the closest attempt and says which constraints weren't met.
+6. **Explain** (`src/explainer.py`): Gemini writes one sentence per song using only that song's catalog facts. Song ids it invents are dropped, and missing or failed explanations fall back to template reasons.
+
+Exit codes: `0` songs shown, `1` catalog files missing or out of date, `2` request rejected by a guardrail, `3` no songs matched. Every step is logged to `logs/app.log`.
 
 ## Song catalog and embeddings
 
@@ -231,6 +311,9 @@ python -m src.spotify_config
 - **Loose genre labels:** the dataset's genres are noisy (e.g. Earth, Wind & Fire's "September" is tagged jazz), and some songs are marked instrumental even though they have vocals.
 - **Rule-based vibe tags:** "calm" or "sad" come from fixed thresholds on audio features, not from listening or lyrics.
 - **Limited genres:** 30 genres are included; requests for others (e.g. k-pop) can only get the closest match.
+- **Gemini plans vary a little between runs.** Even at temperature 0, the same request can get a slightly different plan, so 1–2 of the 5 songs may change (seen with "k-pop for a road trip"). The rules-only mode always gives the same results.
+- **Explanations can drift.** Gemini only gets catalog facts, and invented song ids are dropped, but a sentence can still add a vague detail that isn't in the data (one test run described a song as having "smooth vocals"). The evaluation will count how often this happens.
+- **Speed:** each Gemini call took about 4 seconds in testing, so a request with Gemini takes 8–10 seconds; offline it takes about 3.
 
 More detail, evaluation results and reflection will be in the [model card](model_card.md).
 

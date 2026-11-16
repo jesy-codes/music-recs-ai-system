@@ -1,6 +1,5 @@
 """Tests for the retriever, ranker, recommend() and the CLI, using a tiny catalog and a fake encoder."""
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -12,46 +11,8 @@ from src.ranker import feature_fit, rank, select_mmr, score_candidates
 from src.recommend import recommend
 from src.retriever import Retriever, tokenize
 
-VOCAB = ["jazz", "indie", "metal", "calm", "intense", "acoustic"]
 
-
-class BagOfWordsEncoder:
-    """Deterministic fake: one dimension per vocabulary word, plus a constant so no vector is zero."""
-
-    def encode(self, sentences):
-        rows = []
-        for s in sentences:
-            words = s.lower()
-            rows.append([words.count(w) for w in VOCAB] + [0.1])
-        return np.array(rows, dtype=np.float32)
-
-
-def song(i, title, artist, genres, energy, valence=0.5, acousticness=0.3, instrumentalness=0.0, tags=""):
-    return {
-        "id": i, "track_id": f"t{i}", "title": title, "artist": artist, "album": "A", "genres": genres,
-        "popularity": 50, "explicit": False, "duration_ms": 1, "energy": energy, "valence": valence,
-        "danceability": 0.5, "acousticness": acousticness, "instrumentalness": instrumentalness,
-        "speechiness": 0.05, "liveness": 0.1, "tempo": 100.0, "loudness": -8.0, "mode": 1,
-        "vibe_tags": tags, "description": f"{title} by {artist}. Genres: {genres.replace('; ', ', ')}. Feels: {tags}.",
-    }
-
-
-@pytest.fixture
-def retriever():
-    catalog = pd.DataFrame([
-        song(1, "Blue Calm", "Miles", "jazz", 0.2, tags="calm"),
-        song(2, "Night Calm", "Miles", "jazz", 0.25, tags="calm"),          # same artist as 1
-        song(3, "Soft Jazz", "Ella", "jazz", 0.3, tags="calm"),
-        song(4, "Quiet Indie", "Phoebe", "indie", 0.3, acousticness=0.9, tags="calm, acoustic"),
-        song(5, "Indie Calm", "Bon", "indie", 0.35, tags="calm"),
-        song(6, "Loud Metal", "Iron", "metal", 0.95, tags="intense"),
-        song(7, "More Metal", "Steel", "metal", 0.9, tags="intense"),
-        song(8, "Jazz Indie", "Norah", "indie; jazz", 0.3, tags="calm"),
-    ])
-    encoder = BagOfWordsEncoder()
-    vectors = encoder.encode(catalog["description"].tolist())
-    vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
-    return Retriever(catalog, vectors, encoder)
+# The `retriever` fixture (8-song catalog, fake encoder) lives in tests/conftest.py.
 
 
 def test_tokenize_keeps_hyphenated_genres_and_drops_filler():
@@ -120,15 +81,15 @@ def test_recommend_round_excludes_seen_songs(retriever):
 
 def test_cli_prints_songs(monkeypatch, capsys, retriever):
     monkeypatch.setattr(cli.Retriever, "load", classmethod(lambda cls: retriever))
-    assert cli.main(["calm", "jazz", "-k", "2"]) == 0
+    assert cli.main(["calm", "jazz", "-k", "2", "--offline"]) == 0
     out = capsys.readouterr().out
-    assert "Plan:" in out and "open.spotify.com/track/" in out
+    assert "Plan (rules):" in out and "open.spotify.com/track/" in out
 
 
 def test_cli_json_output(monkeypatch, capsys, retriever):
     import json
     monkeypatch.setattr(cli.Retriever, "load", classmethod(lambda cls: retriever))
-    assert cli.main(["calm jazz", "--json", "-k", "2"]) == 0
+    assert cli.main(["calm jazz", "--json", "-k", "2", "--offline"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert len(payload["songs"]) == 2 and payload["query"]["genres"] == ["jazz"]
 
@@ -143,5 +104,5 @@ def test_cli_missing_catalog_exits_1(monkeypatch, capsys):
 
 def test_cli_blank_request_exits_2(monkeypatch, capsys, retriever):
     monkeypatch.setattr(cli.Retriever, "load", classmethod(lambda cls: retriever))
-    assert cli.main(["  "]) == 2
-    assert "empty" in capsys.readouterr().err
+    assert cli.main(["  ", "--offline"]) == 2
+    assert "empty" in capsys.readouterr().out
