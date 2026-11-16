@@ -12,15 +12,20 @@ LOG_FILE = LOG_DIR / "app.log"
 LOG_FORMAT = "%(asctime)s %(levelname)-7s %(name)s: %(message)s"
 
 
-def setup_logging(level: int = logging.INFO) -> None:
-    """Configure the root logger once; calling it again does nothing."""
+def setup_logging(console_level: int = logging.INFO) -> None:
+    """Configure the root logger once; calling it again does nothing.
+
+    The log file always records INFO and above (every agent step); `console_level` only controls how
+    chatty the terminal is, so the CLI can stay quiet while logs/app.log keeps the full trace.
+    """
     root = logging.getLogger()
     if getattr(root, "_music_recs_configured", False):
         return
-    root.setLevel(level)
+    root.setLevel(logging.INFO)
     formatter = logging.Formatter(LOG_FORMAT)
 
     console = logging.StreamHandler()
+    console.setLevel(console_level)
     console.setFormatter(formatter)
     root.addHandler(console)
 
