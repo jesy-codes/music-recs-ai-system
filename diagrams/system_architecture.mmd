@@ -20,10 +20,13 @@ flowchart TB
         RET["Retriever<br/>embeddings + keywords"]
         RANK["Ranker<br/>audio features +<br/>diversity"]
         CHECK{"Self-check<br/>genre, energy,<br/>count, variety"}
-        EXPL["Explainer<br/>reasons from song<br/>data only"]
+        EXPL["Reasons<br/>from song data only"]
+        RERANK["Gemini reranker<br/>refine round: picks 5<br/>of 30 using 👍/👎"]
         GUARD -- valid --> PLAN --> RET --> RANK --> CHECK
         CHECK -- "fails: adjust,<br/>max 2 retries" --> RET
         CHECK -- passes --> EXPL
+        CHECK -- "refine round" --> RERANK
+        RERANK -- "self-check<br/>Gemini's picks" --> EXPL
     end
 
     subgraph HUMAN["<b style='font-size:20px'>Human review</b>"]
