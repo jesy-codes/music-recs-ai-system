@@ -16,6 +16,8 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Iterable, Optional
 
+import numpy as np
+
 from src.checker import CheckResult, check, filter_to_targets
 from src.explainer import explain
 from src.guardrails import apply_closest_genres, check_request, looks_off_topic
@@ -102,13 +104,23 @@ class PlaylistAgent:
         query = apply_closest_genres(plan.query)
         for note in query.notes:
             self._step(trace, "note", note)
+        return self.search_round(request, query, plan.source, exclude, trace)
 
+    def search_round(self, request: str, query: SearchQuery, plan_source: str, exclude: list[int],
+                     trace: list[Step], query_vector: Optional[np.ndarray] = None,
+                     ok_message: str = "This is the recommended playlist, but let us know if it looks good:") -> AgentResult:
+        """Steps 3-4 for an already-planned query: retrieve, rank, self-check (with retries), explain.
+
+        The feedback loop calls this directly for refine rounds, reusing the round-1 plan (no new planner
+        call) with a feedback-adjusted query vector.
+        """
         # 3. Retrieve -> rank -> self-check, adjusting and retrying when the check fails.
         attempts: list[Attempt] = []
         strict, widen, n_candidates = False, 0.0, DEFAULT_CANDIDATES
         for number in range(1, self.max_retries + 2):
             settings = f"{n_candidates} candidates" + (f", hard energy/mood filter (+{widen:.1f})" if strict else "")
-            candidates = self.retriever.search(query, n_candidates=n_candidates, exclude_ids=exclude)
+            candidates = self.retriever.search(query, n_candidates=n_candidates, exclude_ids=exclude,
+                                               query_vector=query_vector)
             if strict:
                 candidates = filter_to_targets(candidates, query, widen)
             self._step(trace, "retrieve", f"attempt {number}: searched {settings} -> {len(candidates)} kept")
@@ -144,14 +156,14 @@ class PlaylistAgent:
             message = "No songs matched. Try a broader description or fewer exclusions."
             self._step(trace, "present", "no songs")
             return AgentResult(request=request, status="empty", message=message, query=query,
-                               plan_source=plan.source, attempts=attempts, trace=trace)
+                               plan_source=plan_source, attempts=attempts, trace=trace)
 
         # 4. Explain (grounded in catalog data) and present.
         explained = explain(query, best.songs, self.vibe_tags, self.llm)
         self._step(trace, "explain", f"{explained.source}" + (f" (dropped invented ids {explained.dropped_ids})" if explained.dropped_ids else ""))
 
         if best.check.passed:
-            status, message = "ok", "This is the recommended playlist, but let us know if it looks good:"
+            status, message = "ok", ok_message
         else:
             status = "partial"
             message = ("Here's the closest I could find, but not everything you asked for could be met: "
@@ -159,6 +171,6 @@ class PlaylistAgent:
         self._step(trace, "present", f"{status}: {len(best.songs)} songs")
         return AgentResult(
             request=request, status=status, message=message, query=query, songs=best.songs,
-            reasons=explained.reasons, plan_source=plan.source, explain_source=explained.source,
+            reasons=explained.reasons, plan_source=plan_source, explain_source=explained.source,
             attempts=attempts, trace=trace,
         )
