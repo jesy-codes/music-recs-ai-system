@@ -22,7 +22,7 @@ import streamlit as st
 
 from src.agent import AgentResult, PlaylistAgent
 from src.catalog import CatalogError
-from src.export import ExportError, create_spotify_playlist, csv_filename, spotify_configured, to_csv_bytes
+from src.export import ExportError, create_spotify_playlist, csv_filename, spotify_status, to_csv_bytes
 from src.llm import get_client
 from src.log_config import setup_logging
 from src.ranker import Recommendation
@@ -167,7 +167,7 @@ def render_final(session: PlaylistSession) -> None:
             if st.session_state.spotify_link:
                 st.link_button("Open Spotify playlist", st.session_state.spotify_link,
                                icon=":material/open_in_new:", width="stretch")
-            elif spotify_configured():
+            elif spotify_status()[0]:
                 if st.button("Get Spotify playlist link", icon=":material/queue_music:", width="stretch"):
                     try:
                         with st.spinner("Creating the playlist on Spotify…"):
@@ -177,7 +177,7 @@ def render_final(session: PlaylistSession) -> None:
                     st.rerun()
             else:
                 st.button("Get Spotify playlist link", disabled=True, width="stretch",
-                          help="Spotify export isn't configured on this server. Use the CSV or the song links.")
+                          help=spotify_status()[1] + " Meanwhile, use the CSV or the song links.")
         if st.session_state.export_error:
             st.error(st.session_state.export_error)
         st.caption("The Spotify link points to a public playlist in the app owner's account; open it and save it "
