@@ -528,7 +528,7 @@ src/
   cli.py          command line                  query.py      search plan types
 data/             songs.csv, embeddings.npy, catalog_meta.json
 diagrams/         system_architecture.mmd
-docs/             images/, demo_script.md
+docs/             images/ (screenshots, Figma mockup)
 tests/            132 tests
 ```
 
