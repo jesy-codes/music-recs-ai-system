@@ -1,0 +1,65 @@
+%% System diagram: Agentic Playlist Builder
+%% Reads top to bottom: input -> agent process -> human review -> output.
+%% Sections: gray = data, purple = AI agent, amber = human review, green = testing.
+%% Dashed arrows are testing; solid arrows are data flow.
+flowchart TB
+    USER@{ shape: bang, label: "<b style='font-size:22px'>Input</b><br/>user request:<br/>'something chill,<br/>with jazz and indie'" }
+
+    subgraph DATA["<b style='font-size:20px'>Data, built offline</b>"]
+        direction TB
+        RAW[("Spotify Tracks<br/>Dataset, 114k rows")]
+        BUILD["Catalog builder<br/>dedupe, sample genres,<br/>vibe tags, embeddings"]
+        DB[("Catalog<br/>16,120 songs +<br/>embeddings")]
+        RAW --> BUILD --> DB
+    end
+
+    subgraph AGENT["<b style='font-size:20px'>Process: playlist agent</b>"]
+        direction TB
+        GUARD{"Input<br/>guardrail"}
+        PLAN["Planner<br/>Gemini: request to<br/>search query"]
+        RET["Retriever<br/>embeddings + keywords"]
+        RANK["Ranker<br/>audio features +<br/>diversity"]
+        CHECK{"Self-check<br/>genre, energy,<br/>count, variety"}
+        EXPL["Explainer<br/>reasons from song<br/>data only"]
+        GUARD -- valid --> PLAN --> RET --> RANK --> CHECK
+        CHECK -- "fails: adjust,<br/>max 2 retries" --> RET
+        CHECK -- passes --> EXPL
+    end
+
+    subgraph HUMAN["<b style='font-size:20px'>Human review</b>"]
+        direction TB
+        SHOW["5 proposed songs<br/>preview + reason"]
+        VOTE{{"User votes<br/>thumbs up / down"}}
+        FB["Feedback update<br/>toward liked songs,<br/>away from rejected"]
+        SHOW --> VOTE
+        VOTE -- refine --> FB
+    end
+
+    OUT@{ shape: bang, label: "<b style='font-size:22px'>Output</b><br/>final playlist:<br/>liked songs only,<br/>CSV or Spotify link" }
+
+    subgraph TEST["<b style='font-size:20px'>Testing and evaluation</b>"]
+        direction TB
+        UNIT["Unit tests<br/>pytest, Gemini and<br/>Spotify mocked"]
+        EVAL["Evaluator<br/>golden prompts,<br/>precision@5, logs"]
+        SIM["Simulated user<br/>feedback lift<br/>per round"]
+    end
+
+    USER --> GUARD
+    GUARD -- "rejected: ask<br/>to rephrase" --> USER
+    DB --> RET
+    EXPL --> SHOW
+    FB -- "playlist so far +<br/>5 new songs" --> RET
+    VOTE -- done --> OUT
+
+    UNIT -.-> AGENT
+    EVAL -.-> AGENT
+    SIM -.-> VOTE
+
+    %% Boxes are white; each pipeline section gets its own background color.
+    classDef default fill:#FFFFFF,stroke:#888780,color:#2C2C2A
+    style DATA  fill:#F1EFE8,stroke:#5F5E5A,color:#2C2C2A
+    style AGENT fill:#EEEDFE,stroke:#534AB7,color:#26215C
+    style HUMAN fill:#FAEEDA,stroke:#854F0B,color:#412402
+    style TEST  fill:#E1F5EE,stroke:#0F6E56,color:#04342C
+    style USER  fill:#FAC775,stroke:#633806,color:#412402
+    style OUT   fill:#EAF3DE,stroke:#3B6D11,color:#173404
