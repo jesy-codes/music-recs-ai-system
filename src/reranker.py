@@ -4,12 +4,12 @@ The prompt is essentially: "This person liked these songs and rejected these. He
 songs from my catalog. Which 5 should come next, and why?"
 
 Gemini only sees songs the catalog search already found (the 30 candidates, built from the
-vote-adjusted search), so it can't recommend anything outside the catalog. Its answer is then checked
-in Python:
+vote-adjusted search and filtered to the energy/mood targets), so it can't recommend anything outside
+the catalog or the plan's ranges. Its answer is then checked in Python:
 - picks that aren't among the candidates are dropped (invented or mistyped ids),
 - duplicates and a second song by the same artist are skipped,
 - missing picks are filled from the agent's own ranking, with template reasons,
-- the agent's self-check still runs on the final 5 (see PlaylistAgent.refine_round).
+- the agent's self-check still runs on the final 5 (see PlaylistAgent.search_round).
 """
 
 from __future__ import annotations
