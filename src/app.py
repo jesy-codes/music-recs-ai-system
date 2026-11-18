@@ -250,8 +250,8 @@ def main() -> None:
                     start_session(example, agents)
                     st.rerun()
         if gemini_on:
-            st.markdown('<p class="muted">Requests are sent to Google\'s Gemini API to plan the search and write '
-                        'the explanations, so don\'t include personal information.</p>', unsafe_allow_html=True)
+            st.markdown('<p class="muted">Requests are sent to Google\'s Gemini API to plan the search and pick '
+                        'the refine round\'s songs, so don\'t include personal information.</p>', unsafe_allow_html=True)
     else:
         st.markdown(user_bubble_html(st.session_state.request), unsafe_allow_html=True)
         for index, result in enumerate(session.rounds):
