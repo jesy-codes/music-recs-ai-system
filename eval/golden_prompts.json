@@ -1,0 +1,112 @@
+{
+  "_about": [
+    "Golden prompts for eval/run_eval.py. Each prompt says what a correct plan and correct songs look like.",
+    "plan: checked against the planner's SearchQuery. Only the fields listed are checked.",
+    "  genres_all: every one must be in the plan's genres.  genres_any: at least one must be.",
+    "  exclude_genres: every one must be excluded.  unknown_genres: every one must be flagged as not in the catalog.",
+    "  energy / valence: 'low', 'high' or 'none' (the plan's range center below or above 0.5, or no range).",
+    "  acoustic / instrumental: the plan must ask for it.",
+    "songs: checked on every returned song (precision@5). A song counts only if it meets every listed rule.",
+    "  genres: the song has at least one of them.  exclude_genres: it has none of them.",
+    "  energy / valence: [low, high], with the self-check's 0.05 tolerance.",
+    "  acoustic / instrumental: acousticness / instrumentalness >= 0.5.",
+    "on_topic: false means the agent should reject the request (no songs)."
+  ],
+  "prompts": [
+    {
+      "id": "chill-jazz-indie",
+      "request": "something chill, with jazz and indie music",
+      "plan": {"genres_all": ["jazz", "indie"], "energy": "low"},
+      "songs": {"genres": ["jazz", "indie"], "energy": [0.0, 0.45]}
+    },
+    {
+      "id": "gym-no-rap",
+      "request": "pump me up for the gym but no rap",
+      "plan": {"exclude_genres": ["hip-hop"], "energy": "high"},
+      "songs": {"exclude_genres": ["hip-hop"], "energy": [0.7, 1.0]}
+    },
+    {
+      "id": "sad-rainy",
+      "request": "sad songs for a rainy day",
+      "plan": {"valence": "low"},
+      "songs": {"valence": [0.0, 0.4]}
+    },
+    {
+      "id": "happy-pop-roadtrip",
+      "request": "happy upbeat pop for a road trip",
+      "plan": {"genres_all": ["pop"], "valence": "high"},
+      "songs": {"genres": ["pop"], "valence": [0.6, 1.0]}
+    },
+    {
+      "id": "acoustic-folk-evening",
+      "request": "acoustic folk for a quiet evening",
+      "plan": {"genres_all": ["folk"], "energy": "low", "acoustic": true},
+      "songs": {"genres": ["folk"], "energy": [0.0, 0.45], "acoustic": true}
+    },
+    {
+      "id": "instrumental-study",
+      "request": "instrumental music for studying",
+      "plan": {"energy": "low", "instrumental": true},
+      "songs": {"energy": [0.0, 0.45], "instrumental": true}
+    },
+    {
+      "id": "kpop-roadtrip",
+      "request": "k-pop for a road trip",
+      "plan": {"unknown_genres": ["k-pop"]},
+      "songs": {"genres": ["pop"]}
+    },
+    {
+      "id": "metal-running",
+      "request": "heavy metal for running",
+      "plan": {"genres_all": ["metal"], "energy": "high"},
+      "songs": {"genres": ["metal"], "energy": [0.7, 1.0]}
+    },
+    {
+      "id": "piano-sleep",
+      "request": "relaxing piano music to fall asleep to",
+      "plan": {"genres_all": ["piano"], "energy": "low"},
+      "songs": {"genres": ["piano"], "energy": [0.0, 0.45]}
+    },
+    {
+      "id": "funk-soul-cooking",
+      "request": "feel-good funk and soul for cooking dinner",
+      "plan": {"genres_all": ["funk", "soul"], "valence": "high"},
+      "songs": {"genres": ["funk", "soul"], "valence": [0.6, 1.0]}
+    },
+    {
+      "id": "melancholy-indie-folk",
+      "request": "melancholy indie folk, nothing too loud",
+      "plan": {"genres_all": ["indie", "folk"], "energy": "low", "valence": "low"},
+      "songs": {"genres": ["indie", "folk"], "energy": [0.0, 0.45], "valence": [0.0, 0.4]}
+    },
+    {
+      "id": "edm-house-party",
+      "request": "energetic EDM for a house party",
+      "plan": {"genres_all": ["edm"], "energy": "high"},
+      "songs": {"genres": ["edm"], "energy": [0.7, 1.0]}
+    },
+    {
+      "id": "chill-hiphop",
+      "request": "chill hip hop beats to relax",
+      "plan": {"genres_all": ["hip-hop"], "energy": "low"},
+      "songs": {"genres": ["hip-hop"], "energy": [0.0, 0.45]}
+    },
+    {
+      "id": "upbeat-latin",
+      "request": "upbeat latin music for dancing",
+      "plan": {"genres_all": ["latin"], "valence": "high"},
+      "songs": {"genres": ["latin"], "valence": [0.6, 1.0]}
+    },
+    {
+      "id": "like-noah-kahan",
+      "request": "something like Noah Kahan",
+      "plan": {"genres_any": ["folk", "singer-songwriter", "indie", "indie-pop"]},
+      "songs": {"genres": ["folk", "singer-songwriter", "indie", "indie-pop", "acoustic"]}
+    },
+    {
+      "id": "off-topic-essay",
+      "request": "write my history essay about the french revolution",
+      "on_topic": false
+    }
+  ]
+}
