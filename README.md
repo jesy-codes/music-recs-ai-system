@@ -590,13 +590,6 @@ What the numbers show:
 
 Gemini's picks matter most when the listener's taste isn't in the request: "Acoustic purist", "Rainy-day crier" and "No-vocals studier" each went from 60% with the agent's picks to 100% with Gemini's. "Latin party" stayed at 0% with both, because round 1 had no latin song to build on.
 
----|---|---|
-| Precision@5 (songs matching the expected genre/energy) | _pending_ | _pending_ |
-| Planner accuracy (plan matches the expected plan) | _pending_ | _pending_ |
-| Consistency (same prompt 3×, overlap of the top 5) | _pending_ | _pending_ |
-| Made-up songs | 0 by construction | _pending_ |
-| Explanations with details not in the data | n/a (templates) | _pending_ |
-
 ---
 
 ## Limitations and Risks
