@@ -589,13 +589,15 @@ More detail on bias, ethics and evaluation is in the [model card](model_card.md)
 
 ## Reflection
 
-<!-- Draft: rewrite in your own words before submitting. -->
+Before this project, I struggled to tell a chatbot apart from an agent. Now I understand the difference: an agent has one task and its own steps to reach it. Mine plans the search, retrieves songs, checks its own picks against the plan, and retries when they fail. I also learned to build guardrails that keep it on that one goal, recommending music from the catalog. An essay request gets turned away, and a request for a genre the catalog doesn't have gets the closest genre plus a note saying so.
 
-The biggest lesson was where to use the LLM. The first instinct was to let Gemini pick the songs. Giving it narrow jobs (understanding the request, and choosing among 30 retrieved candidates using the listener's votes) while keeping search, ranking, checking and feedback in plain Python made the system testable, repeatable and still useful when the API was down. That happened for real: the free tier ran out during development, and the fallback carried every demo.
+In terms of cost efficiency, every LLM call costs money and quota, so I kept Gemini to at most 2 calls per session: one to plan the first round, and one to choose the refine round's songs from the listener's votes. Everything else (search, ranking, checking, feedback) is plain Python. That also meant the app kept working when my free-tier quota ran out.
 
-Measuring changed the design more than once. The simulated users showed that one refine round gives most of the benefit, which justified the 1-round limit, and the Rock persona exposed a missing feature (learning genres from 👍), which raised the average like rate from 63% to 70%. The self-check turned "it looks right" into a rule the agent enforces on itself.
+One of the hardest parts for me was retrieval. You can't pass the whole catalog of 16,000 songs to the LLM, so you have to choose what it sees. I send Gemini 30 candidates, and only ones that already fit the plan. Deciding what's left out is a design decision, and it affects the results as much as the prompt does.
 
-What I'd do differently: build the golden-prompt evaluation before adding Gemini, budget API quota from the start, and use a catalog with lesser-known artists and cleaner genre labels. More reflection, including ethics, is in the [model card](model_card.md).
+Finally, evals are new territory for me. I'm still learning how to build a good evaluation. So far my rule-based planner is 100% consistent: same request, same plan, every time. The LLM isn't consistent, but it understands requests the rules can't. For "something like Noah Kahan", an artist who isn't in the catalog, the rules found no genre and matched the words instead ("Kahan Par Hai", a hip-hop song by MC STAN, came first), while Gemini turned the name into folk, singer-songwriter and acoustic, and pulled songs that fit. Weighing consistency against understanding is what I want to measure better.
+
+More reflection, including ethics, is in the [model card](model_card.md).
 
 ---
 
