@@ -60,13 +60,29 @@ def test_prompt_lists_votes_and_candidates():
 
 
 def test_agent_keeps_its_own_picks_when_gemini_picks_fail_the_self_check(retriever):
-    """Gemini picks a loud metal song for a calm request: the self-check rejects it and the agent's picks stay."""
+    """Gemini picks only jazz for a jazz + indie request: the self-check rejects it and the agent's picks stay."""
     from src.agent import PlaylistAgent
 
-    loud = retriever.catalog[retriever.catalog["genres"] == "metal"]["id"].tolist()
-    agent = PlaylistAgent(retriever, FakeLLM(PickList=picks(*[(i, "loud") for i in loud])))
-    query = SearchQuery(text="calm music", energy=Range(0.0, 0.45), k=2)
-    result = agent.search_round("calm music", query, "rules", [], [], feedback=([], []))
-    assert not set(loud) & {s.song_id for s in result.songs}
+    jazz_only = retriever.catalog[retriever.catalog["genres"] == "jazz"]["id"].tolist()
+    agent = PlaylistAgent(retriever, FakeLLM(PickList=picks(*[(i, "jazz") for i in jazz_only])))
+    query = SearchQuery(text="calm jazz and indie", genres=["jazz", "indie"], k=2)
+    result = agent.search_round("calm jazz and indie", query, "rules", [], [], feedback=([], []))
+    assert any("indie" in s.genres for s in result.songs)
     assert any(s.name == "rerank" and "failed the self-check" in s.detail for s in result.trace)
     assert result.explain_source == "template"
+
+
+def test_gemini_only_sees_candidates_inside_the_energy_mood_targets(retriever):
+    """The pool sent to Gemini is filtered to the targets, so a calm request never offers it a metal song."""
+    import json
+
+    from src.agent import PlaylistAgent
+
+    loud = set(retriever.catalog[retriever.catalog["genres"] == "metal"]["id"].tolist())
+    fake = FakeLLM(PickList=picks(*[(i, "loud") for i in loud]))
+    query = SearchQuery(text="calm music", energy=Range(0.0, 0.45), k=2)
+    result = PlaylistAgent(retriever, fake).search_round("calm music", query, "rules", [], [], feedback=([], []))
+    candidates = json.loads(fake.calls[-1][1].split("Candidate songs (choose from these only): ", 1)[1])
+    assert candidates and not loud & {c["song_id"] for c in candidates}
+    assert not loud & {s.song_id for s in result.songs}                   # invented picks are dropped and filled
+    assert result.status == "ok"

@@ -138,7 +138,11 @@ class PlaylistAgent:
             self._step(trace, "rank", f"attempt {number}: " + ", ".join(f"{s.title} - {s.artist}" for s in songs))
             result = check(query, songs)
             self._step(trace, "check", f"attempt {number}: {result.summary()}")
-            pool = rank(candidates, query, self.retriever.embeddings, k=POOL_SIZE) if feedback is not None else []
+            pool: list[Recommendation] = []
+            if feedback is not None:
+                # Only songs inside the energy/mood targets go to Gemini, so its picks can't fail on those.
+                in_range = filter_to_targets(candidates, query, widen)
+                pool = rank(in_range, query, self.retriever.embeddings, k=POOL_SIZE)
             attempts.append(Attempt(number, songs, result, settings, pool))
             if result.passed or number > self.max_retries:
                 break
