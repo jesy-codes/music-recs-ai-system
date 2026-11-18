@@ -30,7 +30,7 @@ You type *"recommend something chill, with jazz and indie music"*, and the agent
 | Something useful with AI | Retrieves data from a source and completes a step-by-step task (plan → search → check → refine → export) | `src/agent.py` |
 | **Retrieval-Augmented Generation** | In the refine round, Gemini gets 30 songs retrieved from the catalog plus your 👍/👎, chooses 5 and writes why; any song id that isn't one of the 30 is dropped | `src/retriever.py`, `src/reranker.py` |
 | **Agentic workflow** | Plan → act → check its own work → adjust and retry (max 2) → present; then refine from human feedback | `src/agent.py`, `src/checker.py`, `src/session.py` |
-| **Reliability / testing system** | Guardrails, fallbacks for every Gemini failure, 133 automated tests, simulated users measuring the feedback loop | `src/guardrails.py`, `src/llm.py`, `tests/`, `src/simulator.py` |
+| **Reliability / testing system** | Guardrails, fallbacks for every Gemini failure, 148 automated tests, simulated users measuring the feedback loop, a golden-prompt evaluation of both planners | `src/guardrails.py`, `src/llm.py`, `tests/`, `src/simulator.py`, `eval/run_eval.py` |
 
 ---
 
@@ -133,7 +133,7 @@ flowchart TB
 - **The agent's self-check** catches off-target picks before anyone sees them.
 - **Unit tests** cover every component with Gemini and Spotify mocked.
 - **Simulated users** with hidden tastes measure whether the feedback loop actually learns.
-- **The evaluator** (pending) scores a fixed set of prompts for accuracy, consistency and made-up songs.
+- **The evaluator** (`eval/run_eval.py`) scores 16 fixed prompts for accuracy, consistency, made-up songs and unsupported details in Gemini's reasons, for both planners.
 
 ---
 
@@ -194,6 +194,8 @@ python -m src.cli "chill jazz" --offline                        # no Gemini
 python -m src.cli "chill jazz" --json                           # machine-readable output
 python -m src.cli "chill jazz" --interactive --save             # also save the playlist to exports/*.csv
 python -m src.simulator                                         # simulated-user evaluation (offline)
+python -m eval.run_eval --planners rules                        # golden-prompt evaluation, offline (~10 s)
+python -m eval.run_eval                                         # both planners (~75 Gemini calls, ~5 min)
 ```
 
 Exit codes: `0` songs shown, `1` catalog files missing, `2` request rejected by a guardrail, `3` no songs matched, `4` invalid votes. Every step is logged to `logs/app.log`.
@@ -467,7 +469,7 @@ One request (`src/agent.py`):
 
 ## Testing Summary
 
-**133 automated tests, all passing** (`python -m pytest`, about 5 seconds). Gemini and Spotify are mocked, and a fixture blanks any real API key, so tests never call the network.
+**148 automated tests, all passing** (`python -m pytest`, about 5 seconds). Gemini and Spotify are mocked, and a fixture blanks any real API key, so tests never call the network.
 
 | Test file | Tests | Covers |
 |---|---|---|
@@ -477,6 +479,7 @@ One request (`src/agent.py`):
 | `tests/test_agent.py` | 37 | Planner validation and fallback, guardrails, self-check rules, retries, explainer id filtering, every Gemini error type, retry and circuit breaker |
 | `tests/test_reranker.py` | 8 | Gemini's picks used in its order; invented ids dropped; duplicates and same-artist picks skipped; gaps filled; fallbacks; Gemini only sees candidates inside the energy/mood targets; agent keeps its picks when Gemini's fail the self-check |
 | `tests/test_feedback.py` | 20 | Rocchio math, target shifts, genre learning, session rules (1 refine round, unknown ids), 2 Gemini calls per session, the rerank prompt's votes and candidates, CLI voting, simulator |
+| `tests/test_eval.py` | 15 | Golden-set loading and validation, song and plan scoring, Jaccard, the grounding check for reasons, Gemini runs that fall back to the rules being left out, pacing and quota waits, re-scoring saved runs |
 | `tests/test_app.py` | 15 | CSV and Spotify export (mocked), HTML escaping, visualizer, and a full Streamlit app run: vote → refine → finish |
 
 **Manual checks:** the full app flow in a browser (including changing a 👍 to 👎 in round 2), real Gemini runs (golden path, off-topic, unknown genre, prompt injection, three vibe requests), Gemini failures (404 model, 504 timeout, 429 quota), and a real Spotify login.
@@ -557,12 +560,38 @@ After the reranker was added (`gemini-3.5-flash-lite`, Nov 2026; the 3.6–3.8 f
 
 Gemini vs the keyword planner on the same requests: identical plans for direct requests ("chill jazz and indie", "gym, no rap"); for "rainy sunday morning with coffee", the rules read "rainy" as *sad* while Gemini read the whole request as *cozy and calm*.
 
-### Golden-prompt evaluation (pending)
+### Golden-prompt evaluation
 
-`eval/run_eval.py` will score a fixed set of prompts with expected genres and energy ranges, for both planners:
+`python -m eval.run_eval` scores 16 fixed prompts ([`eval/golden_prompts.json`](eval/golden_prompts.json): 15 music requests plus one off-topic request) with both planners. Each prompt lists what a correct plan and a correct song look like (genres, excluded genres, energy/mood range, acoustic, instrumental). Each prompt ran 3 times per planner (`gemini-3.5-flash-lite`, 17 Nov 2026, 75 Gemini calls, none failed and none fell back to the rules). Full results: [`eval/results.json`](eval/results.json).
 
 | Metric | Rules (offline) | Gemini |
 |---|---|---|
+| Precision@5 (songs matching the expected genre/energy, mean of 3 runs) | 91% | **93%** |
+| Planner accuracy (plan matches the expected plan) | 88% (14/16) | **100% (16/16)** |
+| Consistency (same prompt 3×, overlap of the top 5) | **1.00** | 0.52 |
+| Made-up songs shown | 0 | 0 (1 invented id from the reranker was caught and dropped) |
+| Explanations with details not in the data | n/a (templates) | 4 of 74 refine-round reasons |
+
+**How precision@5 is scored:** a song counts only if it meets every rule for its prompt (for "upbeat latin music for dancing": genre latin and valence 0.6–1.0, with the self-check's 0.05 tolerance). The score is correct songs ÷ 5, averaged over the 15 music prompts and the 3 runs (225 songs for Gemini, ±3% at 95% confidence). The rules planner gives the same songs every run, so its 91% is exact for this set.
+
+What the numbers show:
+
+- **The rules miss on wording, Gemini doesn't.** The rules read "nothing too loud" as a request for high energy (0% on that prompt) and found no genre in "something like Noah Kahan" (60%). Gemini got all 16 plans right, including rejecting the essay request.
+- **Gemini's lists change between runs, but stay on target.** Only about half of the top 5 is the same from run to run (0.52), even at temperature 0. Precision per run stayed at 89–96%, so most of the change is between songs that all fit. The rules planner is fully repeatable.
+- **Gemini's weakest prompt:** "upbeat latin music for dancing", 60% in every run. It added *dance* songs ("Take You Dancing"), which are upbeat but not latin.
+- **The self-check did its job:** the first attempt failed the check for 5 prompts (rules) and 4 (Gemini); a retry fixed every one.
+- **Reasons stay grounded.** All 74 reasons Gemini wrote in the refine round were also read by hand. None invented facts like years, lyrics or awards; the 4 flagged ones add loose words ("classic", "hits", "electronic production", "EDM-pop").
+
+**Refine round, Gemini's picks vs the agent's own** (same votes, same 30 candidates; the agent-only copy never calls Gemini):
+
+| | Gemini's 5 | Agent's own 5 |
+|---|---|---|
+| Golden prompts (listener likes the songs that meet the rules) | 96% precision | 95% precision |
+| 6 simulated users with hidden tastes | **73% liked** (round 1: 47%) | 53% liked |
+
+Gemini's picks matter most when the listener's taste isn't in the request: "Acoustic purist", "Rainy-day crier" and "No-vocals studier" each went from 60% with the agent's picks to 100% with Gemini's. "Latin party" stayed at 0% with both, because round 1 had no latin song to build on.
+
+---|---|---|
 | Precision@5 (songs matching the expected genre/energy) | _pending_ | _pending_ |
 | Planner accuracy (plan matches the expected plan) | _pending_ | _pending_ |
 | Consistency (same prompt 3×, overlap of the top 5) | _pending_ | _pending_ |
@@ -578,7 +607,7 @@ Gemini vs the keyword planner on the same requests: identical plans for direct r
 - **Rule-based vibe tags:** "calm" or "sad" come from fixed thresholds on audio features, not from listening or lyrics.
 - **Limited genres:** 30 genres; others (e.g. k-pop) only get the closest match.
 - **Feedback narrows, it doesn't explore:** if none of the first 5 songs fit, there's nothing to move toward.
-- **Gemini plans vary a little between runs**, so 1–2 songs can change for the same request. The offline mode always gives the same results.
+- **Gemini's results vary between runs:** in the golden-prompt evaluation only about half of the top 5 stayed the same across 3 runs of a request (they still fit the request 89–96% of the time). The offline mode always gives the same results.
 - **Gemini's reasons can drift:** Gemini only receives catalog facts, but one earlier run described a song as having "smooth vocals", which isn't in the data. Reasons in round 1 come from templates, so this only affects the refine round.
 - **Free-tier limits:** Gemini returned 429 after a few dozen calls in a day; the app keeps working, but explanations get plainer.
 - **Speed:** each Gemini call took about 4 s in testing (one per round); offline, a round takes about 3 s.
@@ -617,7 +646,8 @@ src/
 data/             songs.csv, embeddings.npy, catalog_meta.json
 diagrams/         system_architecture.mmd
 docs/             images/ (screenshots, Figma mockup)
-tests/            133 tests
+eval/             golden_prompts.json, run_eval.py, results.json (latest run)
+tests/            148 tests
 ```
 
 ---

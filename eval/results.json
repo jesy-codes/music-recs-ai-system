@@ -1,0 +1,2342 @@
+{
+  "date": "2026-11-17",
+  "gemini_model": "gemini-3.5-flash-lite",
+  "runs_per_prompt": 3,
+  "gemini_calls": 75,
+  "gemini_failed_calls": 0,
+  "seconds": 304.8,
+  "summary": {
+    "rules": {
+      "prompts": 16,
+      "scored": 16,
+      "fallbacks": 0,
+      "precision_at_5": 0.9066666666666666,
+      "planner_accuracy": 0.875,
+      "plans_correct": 14,
+      "consistency": 1.0,
+      "made_up_songs": 0,
+      "rerank_invented_ids": 0,
+      "first_check_failed": 5,
+      "fixed_by_retry": 5,
+      "refine_precision": 0.88,
+      "refine_agent_precision": 0.88,
+      "refine_reranked": 0,
+      "gemini_reasons": 0,
+      "gemini_reasons_flagged": 0
+    },
+    "gemini": {
+      "prompts": 16,
+      "scored": 16,
+      "fallbacks": 0,
+      "precision_at_5": 0.9333333333333333,
+      "planner_accuracy": 1.0,
+      "plans_correct": 16,
+      "consistency": 0.5184303350970018,
+      "made_up_songs": 0,
+      "rerank_invented_ids": 1,
+      "first_check_failed": 4,
+      "fixed_by_retry": 4,
+      "refine_precision": 0.9600000000000001,
+      "refine_agent_precision": 0.9466666666666667,
+      "refine_reranked": 15,
+      "gemini_reasons": 74,
+      "gemini_reasons_flagged": 4
+    }
+  },
+  "prompts": {
+    "rules": [
+      {
+        "id": "chill-jazz-indie",
+        "request": "something chill, with jazz and indie music",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres jazz, indie; moods chill; energy 0.00-0.45",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            253,
+            92,
+            278,
+            713,
+            549
+          ],
+          [
+            253,
+            92,
+            278,
+            713,
+            549
+          ],
+          [
+            253,
+            92,
+            278,
+            713,
+            549
+          ]
+        ],
+        "songs": [
+          "Some Kind Of Wonderful - Peter Cincotti (jazz)",
+          "Sunday Vibe - The BREED (chill; jazz)",
+          "Moon River - Louis Armstrong (jazz)",
+          "Pause - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+          "Something Bout That Feeling - Devin Kennedy (chill; indie; indie-pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "template",
+        "refine_precision": 0.8,
+        "refine_agent_precision": 0.8,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "gym-no-rap",
+        "request": "pump me up for the gym but no rap",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "excluding hip-hop; moods pump, gym; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            13114,
+            13240,
+            10034,
+            12205,
+            4317
+          ],
+          [
+            13114,
+            13240,
+            10034,
+            12205,
+            4317
+          ],
+          [
+            13114,
+            13240,
+            10034,
+            12205,
+            4317
+          ]
+        ],
+        "songs": [
+          "Pump It Louder - Tiësto, Black Eyed Peas (edm)",
+          "Welcome to the Party (with French Montana & Lil Pump, feat. Zhavia Ward) - from Deadpool 2 - Diplo, French Montana, Lil Pump, Zhavia (edm)",
+          "Pump up the Jams - S3RL, Zero-2 (happy)",
+          "Pump This - Juicy M, Willy Van Florence, Amyss (electronic)",
+          "Rap do Deidara: A Arte é a Explosão (Nerd Hits) - 7 Minutoz (r-n-b)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "sad-rainy",
+        "request": "sad songs for a rainy day",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "moods sad, rainy; valence 0.00-0.40",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            14545,
+            13091,
+            15754,
+            8530,
+            6941
+          ],
+          [
+            14545,
+            13091,
+            15754,
+            8530,
+            6941
+          ],
+          [
+            14545,
+            13091,
+            15754,
+            8530,
+            6941
+          ]
+        ],
+        "songs": [
+          "November Air - Zach Bryan (country)",
+          "Kernkraft 400 (A Better Day) - Topic, A7S (edm)",
+          "Day by Day - Bonobo, Kadhja Bonet (trip-hop)",
+          "Gentle Rain Fall - Rain Sounds, Rainfall, Rain for Deep Sleep, Rain Sounds Nature Collection, Fresh Water Spa, Sounds Of Nature : Thunderstorm, Rain (sleep)",
+          "Rainy Nights - Random Forest (ambient)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "happy-pop-roadtrip",
+        "request": "happy upbeat pop for a road trip",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres pop; moods happy, upbeat; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            10236,
+            10120,
+            10183,
+            10736,
+            10189
+          ],
+          [
+            10236,
+            10120,
+            10183,
+            10736,
+            10189
+          ],
+          [
+            10236,
+            10120,
+            10183,
+            10736,
+            10189
+          ]
+        ],
+        "songs": [
+          "Cheap Thrills - Sia (dance; pop)",
+          "good 4 u - Olivia Rodrigo (pop)",
+          "Happier - Marshmello, Bastille (dance; edm; pop)",
+          "Out of Time - The Weeknd (pop)",
+          "Butter - BTS (pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "acoustic-folk-evening",
+        "request": "acoustic folk for a quiet evening",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres folk; moods quiet, acoustic; energy 0.00-0.45; acoustic",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            3560,
+            2056,
+            3294,
+            3263,
+            2092
+          ],
+          [
+            3560,
+            2056,
+            3294,
+            3263,
+            2092
+          ],
+          [
+            3560,
+            2056,
+            3294,
+            3263,
+            2092
+          ]
+        ],
+        "songs": [
+          "Gandagana - Basiani Ensemble (folk)",
+          "This Time Tomorrow - Brandi Carlile (acoustic; folk)",
+          "San Luis - Gregory Alan Isakov (folk)",
+          "The Sound of Silence - Acoustic Version - Simon & Garfunkel (folk)",
+          "Alone with You - Canyon City (acoustic; folk)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "template",
+        "refine_precision": 0.6,
+        "refine_agent_precision": 0.6,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "instrumental-study",
+        "request": "instrumental music for studying",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "moods studying, instrumental; energy 0.00-0.45; instrumental",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            8318,
+            3474,
+            6038,
+            2536,
+            8260
+          ],
+          [
+            8318,
+            3474,
+            6038,
+            2536,
+            8260
+          ],
+          [
+            8318,
+            3474,
+            6038,
+            2536,
+            8260
+          ]
+        ],
+        "songs": [
+          "Study Music for Focus (Alpha Waves) - Study Music & Sounds (sleep)",
+          "O Re Piya - Flute Version (Instrumental) - Salim–Sulaiman (folk)",
+          "Memories (Piano Instrumental) - Benny Martin (piano)",
+          "As It Was - Acoustic Instrumental - Guus Dielissen (acoustic)",
+          "Study Music - Study Music & Sounds, Study Alpha Waves, Binaural Beats Study Music (sleep)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "kpop-roadtrip",
+        "request": "k-pop for a road trip",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres pop",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            10777,
+            10771,
+            10704,
+            10773,
+            10256
+          ],
+          [
+            10777,
+            10771,
+            10704,
+            10773,
+            10256
+          ],
+          [
+            10777,
+            10771,
+            10704,
+            10773,
+            10256
+          ]
+        ],
+        "songs": [
+          "Time After Time - Live At Abbey Road Studios - Sam Smith (dance; pop)",
+          "West Coast - Lana Del Rey (pop)",
+          "Street Style - JERRY (pop)",
+          "The Joker and the Queen - Ed Sheeran (pop)",
+          "The Last Ride - Sidhu Moose Wala (hip-hop; pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "metal-running",
+        "request": "heavy metal for running",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres metal; moods running; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            13808,
+            14273,
+            11574,
+            14049,
+            11570
+          ],
+          [
+            13808,
+            14273,
+            11574,
+            14049,
+            11570
+          ],
+          [
+            13808,
+            14273,
+            11574,
+            14049,
+            11570
+          ]
+        ],
+        "songs": [
+          "Fuel - Metallica (metal)",
+          "EVOLVE - The Warning (metal)",
+          "Mute - Drowning Pool (alt-rock; metal)",
+          "Low - Wage War (metal)",
+          "Indians - Anthrax (alt-rock; metal)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "piano-sleep",
+        "request": "relaxing piano music to fall asleep to",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres piano; moods relaxing; energy 0.00-0.45",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            5908,
+            5984,
+            5458,
+            5758,
+            5873
+          ],
+          [
+            5908,
+            5984,
+            5458,
+            5758,
+            5873
+          ],
+          [
+            5908,
+            5984,
+            5458,
+            5758,
+            5873
+          ]
+        ],
+        "songs": [
+          "River Flows in You - Jim Well Tempered (piano)",
+          "Loneliness (from \"Naruto Shippuden\") - Piano Lullaby - Anime Piano Dreamers (piano)",
+          "Spheroidal - Kalen Elmsley (piano)",
+          "Fall for You - Secondhand Serenade (piano)",
+          "Way to Fall - Starsailor (piano)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "funk-soul-cooking",
+        "request": "feel-good funk and soul for cooking dinner",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres funk, soul; moods feel-good; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            3876,
+            4118,
+            3858,
+            4126,
+            3954
+          ],
+          [
+            3876,
+            4118,
+            3858,
+            4126,
+            3954
+          ],
+          [
+            3876,
+            4118,
+            3858,
+            4126,
+            3954
+          ]
+        ],
+        "songs": [
+          "Lovely Day - Bill Withers (funk; soul)",
+          "Smokin' & Drinkin' - James Brown (funk; soul)",
+          "My Girl - The Temptations (funk; soul)",
+          "What Do The Lonely Do At Christmas? - The Emotions (funk; soul)",
+          "Cry to Me - Solomon Burke (blues; funk; soul)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "melancholy-indie-folk",
+        "request": "melancholy indie folk, nothing too loud",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres indie, folk; moods melancholy, loud; energy 0.70-1.00; valence 0.00-0.40",
+        "plan_summaries": [],
+        "plan_problems": [
+          "energy high, expected low"
+        ],
+        "status": "ok",
+        "song_ids": [
+          [
+            991,
+            723,
+            854,
+            10106,
+            632
+          ],
+          [
+            991,
+            723,
+            854,
+            10106,
+            632
+          ],
+          [
+            991,
+            723,
+            854,
+            10106,
+            632
+          ]
+        ],
+        "songs": [
+          "Don't Dream It's Over - The Head And The Heart (folk; indie; indie-pop)",
+          "When We Feel Young - When Chai Met Toast (folk; indie; indie-pop)",
+          "Khnoro Aamar Fossil - Fossils (folk; indie)",
+          "I Was Never There - The Weeknd, Gesaffelstein (pop)",
+          "Tune Kaha - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)"
+        ],
+        "precision": 0.0,
+        "precisions": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "template",
+        "refine_precision": 0.0,
+        "refine_agent_precision": 0.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "edm-house-party",
+        "request": "energetic EDM for a house party",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres edm; moods energetic, party; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            13408,
+            13384,
+            13056,
+            13466,
+            12995
+          ],
+          [
+            13408,
+            13384,
+            13056,
+            13466,
+            12995
+          ],
+          [
+            13408,
+            13384,
+            13056,
+            13466,
+            12995
+          ]
+        ],
+        "songs": [
+          "Antidote - Radio Edit - Swedish House Mafia, Knife Party (edm)",
+          "Beach House - The Chainsmokers (edm)",
+          "Last Dance - Radio Edit - Avicii (dance; edm)",
+          "The Bender - Matoma, Brando (edm)",
+          "REMEDY - Alesso (dance; edm)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "chill-hiphop",
+        "request": "chill hip hop beats to relax",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres hip-hop; moods chill, relax; energy 0.00-0.45",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            12084,
+            11673,
+            10473,
+            4107,
+            11630
+          ],
+          [
+            12084,
+            11673,
+            10473,
+            4107,
+            11630
+          ],
+          [
+            12084,
+            11673,
+            10473,
+            4107,
+            11630
+          ]
+        ],
+        "songs": [
+          "Banking on Me - Gunna (hip-hop)",
+          "Offshore - Shubh (hip-hop)",
+          "Hills - AP Dhillon (hip-hop; pop)",
+          "Or Nah - Remix - Ty Dolla $ign, The Weeknd, Wiz Khalifa, DJ Mustard (dance; hip-hop; soul)",
+          "the remedy for a broken heart (why am I so in love) - XXXTENTACION (hip-hop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "template",
+        "refine_precision": 0.8,
+        "refine_agent_precision": 0.8,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "upbeat-latin",
+        "request": "upbeat latin music for dancing",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "genres latin; moods upbeat; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            13580,
+            13544,
+            13621,
+            13474,
+            12079
+          ],
+          [
+            13580,
+            13544,
+            13621,
+            13474,
+            12079
+          ],
+          [
+            13580,
+            13544,
+            13621,
+            13474,
+            12079
+          ]
+        ],
+        "songs": [
+          "Dirty Dancer - Enrique Iglesias, Usher (latin)",
+          "Amarillo - J Balvin (latin; reggae)",
+          "Sofia - Alvaro Soler (latin)",
+          "La Bachata - Manuel Turizo (latin; reggae)",
+          "Vacilón - Don Omar (hip-hop; latin; reggae)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "like-noah-kahan",
+        "request": "something like Noah Kahan",
+        "on_topic": true,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "no filters (semantic search only)",
+        "plan_summaries": [],
+        "plan_problems": [
+          "none of the genres ['folk', 'singer-songwriter', 'indie', 'indie-pop']"
+        ],
+        "status": "ok",
+        "song_ids": [
+          [
+            12006,
+            3426,
+            9117,
+            2765,
+            2771
+          ],
+          [
+            12006,
+            3426,
+            9117,
+            2765,
+            2771
+          ],
+          [
+            12006,
+            3426,
+            9117,
+            2765,
+            2771
+          ]
+        ],
+        "songs": [
+          "Kahan Par Hai - MC STAN (hip-hop)",
+          "Hai Kahan Ka Irada - Nusrat Fateh Ali Khan, Afternight Vibes (folk)",
+          "Broken (with Lil Skies & Noah Cyrus) - Lund, Lil Skies, Noah Cyrus (sad)",
+          "Kho Gaye Hum Kahan - Jasleen Royal, Prateek Kuhad (pop; singer-songwriter)",
+          "Dear August - PJ Harding, Noah Cyrus (singer-songwriter)"
+        ],
+        "precision": 0.6,
+        "precisions": [
+          0.6,
+          0.6,
+          0.6
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "template",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      },
+      {
+        "id": "off-topic-essay",
+        "request": "write my history essay about the french revolution",
+        "on_topic": false,
+        "plan_sources": [
+          "rules",
+          "rules",
+          "rules"
+        ],
+        "plan_summary": "no filters (semantic search only)",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "rejected",
+        "song_ids": [
+          [],
+          [],
+          []
+        ],
+        "songs": [],
+        "precision": null,
+        "precisions": [],
+        "consistency": null,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "",
+        "refine_precision": null,
+        "refine_agent_precision": null,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      }
+    ],
+    "gemini": [
+      {
+        "id": "chill-jazz-indie",
+        "request": "something chill, with jazz and indie music",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres jazz, indie; moods chill; energy 0.00-0.45",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            92,
+            87,
+            37,
+            549,
+            966
+          ],
+          [
+            73,
+            278,
+            253,
+            816,
+            973
+          ],
+          [
+            304,
+            73,
+            973,
+            278,
+            816
+          ]
+        ],
+        "songs": [
+          "Sunday Vibe - The BREED (chill; jazz)",
+          "Backdrop - Konteks (chill; jazz)",
+          "Take Five - The Dave Brubeck Quartet (jazz)",
+          "Something Bout That Feeling - Devin Kennedy (chill; indie; indie-pop)",
+          "Teenage Dirtbag - Cavetown, chloe moriondo (indie; indie-pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.2222222222222222,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Feelin' Good - Zmeyev (chill; jazz)",
+            "reason": "Like Sunday Vibe, it is a chill instrumental jazz track with a calm and slow vibe.",
+            "flags": []
+          },
+          {
+            "song": "Some Kind Of Wonderful - Peter Cincotti (jazz)",
+            "reason": "Like Take Five, this jazz song features a groovy and danceable rhythm that fits the vibe.",
+            "flags": []
+          },
+          {
+            "song": "Stay - Gracie Abrams (indie; indie-pop)",
+            "reason": "Like Teenage Dirtbag, this is a calm and mellow indie track with acoustic and organic elements.",
+            "flags": []
+          },
+          {
+            "song": "Pause - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+            "reason": "Like Teenage Dirtbag, it brings a peaceful indie-pop sound that is both acoustic and organic.",
+            "flags": []
+          },
+          {
+            "song": "Home - Michael Bublé (jazz)",
+            "reason": "Like Take Five, this jazz piece maintains a calm and mellow atmosphere with acoustic qualities.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "gym-no-rap",
+        "request": "pump me up for the gym but no rap",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "excluding hip-hop; moods energetic; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            13114,
+            13030,
+            10034,
+            12205,
+            9571
+          ],
+          [
+            13114,
+            13030,
+            11063,
+            10192,
+            13240
+          ],
+          [
+            13030,
+            10034,
+            9889,
+            13114,
+            11063
+          ]
+        ],
+        "songs": [
+          "Pump It Louder - Tiësto, Black Eyed Peas (edm)",
+          "The Edge Of Glory - Lady Gaga (dance)",
+          "Pump up the Jams - S3RL, Zero-2 (happy)",
+          "Pump This - Juicy M, Willy Van Florence, Amyss (electronic)",
+          "Sunrise - 2021 Edit - Klubfiller, Rob Tissera, Steve Hill (happy)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.36904761904761907,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Maria (I Like It Loud) - Live - Scooter (happy)",
+            "reason": "Like Pump It Louder, Maria (I Like It Loud) is an energetic and intense track that will pump you up.",
+            "flags": []
+          },
+          {
+            "song": "Rise Up (feat. Vamero) - VINAI, VAMERO (edm)",
+            "reason": "Rise Up matches the energetic and intense edm vibe of Pump It Louder to keep your gym session going.",
+            "flags": []
+          },
+          {
+            "song": "My Songs Know What You Did In The Dark (Light Em Up) - Fall Out Boy (rock)",
+            "reason": "My Songs Know What You Did In The Dark is fast, energetic, and intense like Lady Gaga's The Edge Of Glory.",
+            "flags": []
+          },
+          {
+            "song": "Sky High - Elektronomia (edm)",
+            "reason": "Sky High has the same energetic and intense edm style found in your liked songs.",
+            "flags": []
+          },
+          {
+            "song": "Sunrise - 2021 Mix - Klubfiller, Rob Tissera, Steve Hill (happy)",
+            "reason": "Sunrise is a fast, energetic, and intense happy track similar to Pump up the Jams.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "sad-rainy",
+        "request": "sad songs for a rainy day",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "moods sad, rainy day; energy 0.00-0.45; valence 0.00-0.40",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            14545,
+            1828,
+            2997,
+            5808,
+            2957
+          ],
+          [
+            14545,
+            6941,
+            1828,
+            8626,
+            2957
+          ],
+          [
+            14545,
+            5808,
+            1828,
+            2997,
+            5788
+          ]
+        ],
+        "songs": [
+          "November Air - Zach Bryan (country)",
+          "Back Then - S N U G, Dyrean (chill)",
+          "One Day Less - Anson Seabra (singer-songwriter)",
+          "One Summer's Day - Smyang Piano (piano)",
+          "How Do You Dress for the Rain? - Sam MacPherson (singer-songwriter)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.4484126984126984,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Never on the Day You Leave - John Mayer (singer-songwriter)",
+            "reason": "Like November Air, it is a calm, acoustic singer-songwriter track with a sad and moody vibe.",
+            "flags": []
+          },
+          {
+            "song": "Valentine - Laufey (singer-songwriter)",
+            "reason": "Like One Summer's Day, this song is slow, mellow, and acoustic.",
+            "flags": []
+          },
+          {
+            "song": "Broken - Anson Seabra (singer-songwriter)",
+            "reason": "Like One Day Less, it is a calm and organic singer-songwriter song.",
+            "flags": []
+          },
+          {
+            "song": "Go Solo - Tom Rosenthal (singer-songwriter)",
+            "reason": "Like Back Then, it has a slow, mellow, and acoustic instrumental feel.",
+            "flags": []
+          },
+          {
+            "song": "A Soulmate Who Wasn’t Meant to Be - Jess Benko (singer-songwriter)",
+            "reason": "Like How Do You Dress for the Rain?, this track features a sad and moody atmosphere.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "happy-pop-roadtrip",
+        "request": "happy upbeat pop for a road trip",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres pop; moods happy, upbeat; energy 0.70-1.00; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            10236,
+            10120,
+            10736,
+            10183,
+            10169
+          ],
+          [
+            10236,
+            10120,
+            10736,
+            10183,
+            10169
+          ],
+          [
+            10236,
+            10120,
+            10736,
+            10183,
+            10169
+          ]
+        ],
+        "songs": [
+          "Cheap Thrills - Sia (dance; pop)",
+          "good 4 u - Olivia Rodrigo (pop)",
+          "Out of Time - The Weeknd (pop)",
+          "Happier - Marshmello, Bastille (dance; edm; pop)",
+          "Levitating - Dua Lipa (dance; pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Harleys In Hawaii - Katy Perry (dance; pop)",
+            "reason": "Like Cheap Thrills, this track delivers a happy and upbeat pop vibe that is perfect for driving.",
+            "flags": []
+          },
+          {
+            "song": "Woman - Doja Cat (dance; pop)",
+            "reason": "Similar to Levitating, it is an energetic and danceable pop song fitting a fun road trip playlist.",
+            "flags": []
+          },
+          {
+            "song": "The Nights - Avicii (dance; edm; pop)",
+            "reason": "Much like Happier, this energetic EDM-pop track brings an intense and upbeat mood for the road.",
+            "flags": [
+              "edm-pop (compound genre not in the catalog)"
+            ]
+          },
+          {
+            "song": "What Makes You Beautiful - One Direction (pop)",
+            "reason": "It matches the happy and upbeat style of good 4 u with its groovy, energetic pop rhythm.",
+            "flags": []
+          },
+          {
+            "song": "Say My Name - David Guetta, Bebe Rexha, J Balvin (dance; edm; pop)",
+            "reason": "Like Out of Time, this danceable pop track keeps the driving energy high with upbeat vibes.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "acoustic-folk-evening",
+        "request": "acoustic folk for a quiet evening",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres folk; moods acoustic, quiet; energy 0.00-0.45; acoustic",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            3560,
+            2056,
+            3263,
+            3294,
+            2767
+          ],
+          [
+            3560,
+            3294,
+            3263,
+            2215,
+            2056
+          ],
+          [
+            3560,
+            3263,
+            3294,
+            2056,
+            3752
+          ]
+        ],
+        "songs": [
+          "Gandagana - Basiani Ensemble (folk)",
+          "This Time Tomorrow - Brandi Carlile (acoustic; folk)",
+          "The Sound of Silence - Acoustic Version - Simon & Garfunkel (folk)",
+          "San Luis - Gregory Alan Isakov (folk)",
+          "Vincent - Don McLean (folk; singer-songwriter)"
+        ],
+        "precision": 0.9333333333333332,
+        "precisions": [
+          1.0,
+          0.8,
+          1.0
+        ],
+        "consistency": 0.6666666666666666,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Alone with You - Canyon City (acoustic; folk)",
+            "reason": "Like Vincent, this track features calm, mellow, and acoustic vibes perfect for a quiet evening.",
+            "flags": []
+          },
+          {
+            "song": "Pictures - Seafret (folk)",
+            "reason": "Much like The Sound of Silence, it is an acoustic folk song with a calm and mellow feel.",
+            "flags": []
+          },
+          {
+            "song": "London's Song - Matt Hartke (folk; indie; indie-pop)",
+            "reason": "Like Gandagana, this song is slow, acoustic, and organic, fitting the quiet evening mood.",
+            "flags": []
+          },
+          {
+            "song": "Pause - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+            "reason": "Similar to This Time Tomorrow, it brings a calm and mellow acoustic folk atmosphere.",
+            "flags": []
+          },
+          {
+            "song": "Back to You - Flower Face (ambient; folk)",
+            "reason": "Sharing the sad and moody acoustic vibe of San Luis, this is a great slow folk addition.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "instrumental-study",
+        "request": "instrumental music for studying",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "moods study; energy 0.00-0.45; instrumental",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            8318,
+            8288,
+            8047,
+            8029,
+            8066
+          ],
+          [
+            7481,
+            7421,
+            7641,
+            7820,
+            7331
+          ],
+          [
+            7905,
+            7873,
+            7331,
+            7830,
+            7822
+          ]
+        ],
+        "songs": [
+          "Study Music for Focus (Alpha Waves) - Study Music & Sounds (sleep)",
+          "Deep Focus - Study Music & Sounds, Study Alpha Waves, Binaural Beats Study Music (sleep)",
+          "Deep breaths - Jirou Soller (sleep)",
+          "Sleeping Music (Deep Sleep) - Deep Sleep Music Collective (sleep)",
+          "Deep Brown Noise - Brainbox (sleep)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.037037037037037035,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Inner Journey - Chopade (sleep)",
+            "reason": "Like Deep breaths, this instrumental track offers a calm and slow acoustic vibe ideal for studying.",
+            "flags": []
+          },
+          {
+            "song": "At Rest - Mjuk (sleep)",
+            "reason": "Like Sleeping Music, it provides a mellow, instrumental, and acoustic atmosphere with no vocals.",
+            "flags": []
+          },
+          {
+            "song": "Cloud Study - Norris Melcher (sleep)",
+            "reason": "Like Deep Brown Noise, this slow instrumental piece helps maintain focus while studying.",
+            "flags": []
+          },
+          {
+            "song": "Ons - Huma (sleep)",
+            "reason": "Like Study Music for Focus, it features a calm, organic, and instrumental soundscape with zero vocals.",
+            "flags": []
+          },
+          {
+            "song": "Perspective - Jorin Williams (sleep)",
+            "reason": "Like Deep Focus, this track delivers a slow, acoustic, and moody instrumental vibe for deep concentration.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "kpop-roadtrip",
+        "request": "k-pop for a road trip",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres pop; moods upbeat, energetic; energy 0.70-1.00; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            10736,
+            10169,
+            10701,
+            10147,
+            10711
+          ],
+          [
+            10282,
+            10736,
+            10169,
+            10100,
+            10147
+          ],
+          [
+            10736,
+            10169,
+            14435,
+            10701,
+            10711
+          ]
+        ],
+        "songs": [
+          "Out of Time - The Weeknd (pop)",
+          "Levitating - Dua Lipa (dance; pop)",
+          "Phulkari - Karan Randhawa (pop)",
+          "Yet To Come - BTS (pop)",
+          "Qismat - Ammy Virk (pop)"
+        ],
+        "precision": 0.9333333333333332,
+        "precisions": [
+          1.0,
+          1.0,
+          0.8
+        ],
+        "consistency": 0.4484126984126984,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Dynamite - BTS (pop)",
+            "reason": "Like Yet To Come, it is a high-energy pop track by BTS with an upbeat vibe perfect for driving.",
+            "flags": []
+          },
+          {
+            "song": "Pink Venom - BLACKPINK (pop)",
+            "reason": "Like Levitating, this pop song is danceable, groovy, energetic, and features an upbeat tempo ideal for a road trip.",
+            "flags": []
+          },
+          {
+            "song": "As It Was - Harry Styles (pop)",
+            "reason": "Like Out of Time, this pop song has an energetic and upbeat feel with a fast tempo.",
+            "flags": []
+          },
+          {
+            "song": "What Makes You Beautiful - One Direction (pop)",
+            "reason": "Like Levitating, this track brings an intense, energetic, and happy pop vibe that fits a fun road trip.",
+            "flags": []
+          },
+          {
+            "song": "The Nights - Avicii (dance; edm; pop)",
+            "reason": "Like Out of Time, this upbeat and energetic track delivers an intense, happy vibe for the road.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "metal-running",
+        "request": "heavy metal for running",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres metal; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            14273,
+            13808,
+            11051,
+            11207,
+            14118
+          ],
+          [
+            14273,
+            13808,
+            11207,
+            11051,
+            14118
+          ],
+          [
+            14273,
+            13808,
+            11079,
+            14118,
+            11207
+          ]
+        ],
+        "songs": [
+          "EVOLVE - The Warning (metal)",
+          "Fuel - Metallica (metal)",
+          "Heaven Nor Hell - Volbeat (alt-rock; metal; rock)",
+          "The Pot - TOOL (alt-rock; metal)",
+          "You & I - Live - Scorpions (metal)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.7777777777777777,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank+agent",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [
+          13803
+        ],
+        "gemini_reasons": [
+          {
+            "song": "The Resistance - Skillet (alt-rock; metal)",
+            "reason": "This alt-rock and metal track matches the energetic, intense, and fast vibe of EVOLVE.",
+            "flags": []
+          },
+          {
+            "song": "Symphony Of Destruction - Megadeth (alt-rock; metal; rock)",
+            "reason": "Like Heaven Nor Hell, this metal song offers an upbeat and energetic rhythm for your run.",
+            "flags": []
+          },
+          {
+            "song": "Bulls On Parade - Rage Against The Machine (alt-rock; metal)",
+            "reason": "This fast metal track shares the intense and energetic qualities found in The Pot.",
+            "flags": []
+          },
+          {
+            "song": "Hey You - Disturbed (metal)",
+            "reason": "Like EVOLVE, this metal song provides high energy and intensity to power through your workout.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "piano-sleep",
+        "request": "relaxing piano music to fall asleep to",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres piano; moods relaxing, sleep; energy 0.00-0.30; acoustic; instrumental",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            5984,
+            5505,
+            5908,
+            6071,
+            5840
+          ],
+          [
+            5505,
+            5908,
+            5984,
+            5840,
+            5458
+          ],
+          [
+            5908,
+            5458,
+            5984,
+            6071,
+            8347
+          ]
+        ],
+        "songs": [
+          "Loneliness (from \"Naruto Shippuden\") - Piano Lullaby - Anime Piano Dreamers (piano)",
+          "A Gentle Sunlight - James Quinn (piano)",
+          "River Flows in You - Jim Well Tempered (piano)",
+          "The Name of Life - Felt Piano Version (From \"Spirited Away\") - Laura Sullivan (piano; sleep)",
+          "Through the Mists - Chewie Melodies (piano)"
+        ],
+        "precision": 0.9333333333333332,
+        "precisions": [
+          1.0,
+          1.0,
+          0.8
+        ],
+        "consistency": 0.5079365079365079,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 0.8,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Let It Be - Piano Version - Mark Benson (piano)",
+            "reason": "Like A Gentle Sunlight, this is a slow, calm, acoustic, and instrumental piano piece.",
+            "flags": []
+          },
+          {
+            "song": "Comptine D'un Autre Été - Jim Well Tempered (piano)",
+            "reason": "Similar to Loneliness, it features a slow, mellow, instrumental piano melody ideal for relaxing.",
+            "flags": []
+          },
+          {
+            "song": "First Love - Smyang Piano (piano)",
+            "reason": "Like Through the Mists, this track provides a calm, acoustic, and slow piano experience.",
+            "flags": []
+          },
+          {
+            "song": "Relaxing Piano - Baby Sleep Music, Baby Lullaby, Monarch Baby Lullaby Institute (sleep)",
+            "reason": "Like River Flows in You, this offers a mellow, instrumental acoustic sound to help you fall asleep.",
+            "flags": []
+          },
+          {
+            "song": "A Thousand Years (Piano Version) - Laura Sullivan (piano; sleep)",
+            "reason": "Like The Name of Life, this is a calm, instrumental piano version that fits your sleep playlist.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "funk-soul-cooking",
+        "request": "feel-good funk and soul for cooking dinner",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres funk, soul; moods happy; energy 0.60-1.00; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            3854,
+            3876,
+            13899,
+            4104,
+            3979
+          ],
+          [
+            3854,
+            3876,
+            13899,
+            4104,
+            3979
+          ],
+          [
+            3876,
+            13899,
+            14916,
+            3979,
+            3902
+          ]
+        ],
+        "songs": [
+          "Let's Groove - Earth, Wind & Fire (funk; soul)",
+          "Lovely Day - Bill Withers (funk; soul)",
+          "Peace and Love - Red Hot Chili Peppers (funk; metal)",
+          "Get Up Offa That Thing - James Brown (funk; soul)",
+          "Give It To Me Baby - Rick James (funk; soul)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.6190476190476191,
+        "made_up_ids": [],
+        "first_check_failed": true,
+        "fixed_by_retry": true,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "September - Earth, Wind & Fire (funk; jazz; soul)",
+            "reason": "Like Let's Groove by Earth, Wind & Fire, this upbeat and energetic soul track provides a great vibe for cooking dinner.",
+            "flags": []
+          },
+          {
+            "song": "Super Freak - Rick James (funk; soul)",
+            "reason": "Like Rick James's Give It To Me Baby, this groovy funk track is intense and danceable.",
+            "flags": []
+          },
+          {
+            "song": "Superstition - Stevie Wonder (funk; indie; soul)",
+            "reason": "Like Bill Withers's Lovely Day, this happy and upbeat soul song fits a relaxing cooking atmosphere.",
+            "flags": []
+          },
+          {
+            "song": "Ain't Nobody - Chaka Khan (funk; soul)",
+            "reason": "Like James Brown's Get Up Offa That Thing, this energetic track brings a fun, danceable groove.",
+            "flags": []
+          },
+          {
+            "song": "Get Down On It - Single Version - Kool & The Gang (funk; soul)",
+            "reason": "Like the listener's favorite funk and soul hits, this track is upbeat and happy.",
+            "flags": [
+              "hits"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "melancholy-indie-folk",
+        "request": "melancholy indie folk, nothing too loud",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres indie, folk; moods melancholy, sad; energy 0.00-0.45; valence 0.00-0.40",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            326,
+            899,
+            448,
+            454,
+            6936
+          ],
+          [
+            326,
+            454,
+            448,
+            6936,
+            899
+          ],
+          [
+            899,
+            454,
+            326,
+            448,
+            436
+          ]
+        ],
+        "songs": [
+          "The Night We Met - Lord Huron (folk; indie)",
+          "Just A Word - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+          "State Lines - Novo Amor (ambient; folk; indie; indie-pop)",
+          "Someone To Stay - Vancouver Sleep Clinic (folk; indie; indie-pop)",
+          "As the Darkness Falls - Maxence Cyrin (ambient)"
+        ],
+        "precision": 0.8666666666666667,
+        "precisions": [
+          0.8,
+          0.8,
+          1.0
+        ],
+        "consistency": 0.7777777777777777,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "I Found - Amber Run (folk; indie)",
+            "reason": "Like The Night We Met, it is a calm, sad, and moody indie folk song.",
+            "flags": []
+          },
+          {
+            "song": "Keep Me - Novo Amor (ambient; folk; indie)",
+            "reason": "Like State Lines, it features a slow, calm, and acoustic organic vibe by Novo Amor.",
+            "flags": []
+          },
+          {
+            "song": "rises the moon - Liana Flores (indie; indie-pop)",
+            "reason": "Like Just A Word, this indie track captures a mellow, sad, and organic atmosphere.",
+            "flags": []
+          },
+          {
+            "song": "Angela - Flower Face (ambient; folk; indie-pop)",
+            "reason": "Like Someone To Stay, it leans into a sad and moody indie-pop style.",
+            "flags": []
+          },
+          {
+            "song": "The Sound of Silence - Simon & Garfunkel (folk)",
+            "reason": "Like The Night We Met, it delivers a classic, calm, and acoustic folk sound.",
+            "flags": [
+              "classic"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "edm-house-party",
+        "request": "energetic EDM for a house party",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres edm; energy 0.70-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            12211,
+            13390,
+            13335,
+            13441,
+            13408
+          ],
+          [
+            12126,
+            13408,
+            13056,
+            12911,
+            10751
+          ],
+          [
+            12126,
+            13035,
+            10751,
+            13046,
+            13056
+          ]
+        ],
+        "songs": [
+          "Tokyo - Leat'eq (edm; electronic)",
+          "High (feat. Aleesia) - JPB, Aleesia (edm)",
+          "Sky High - Elektronomia (edm)",
+          "Party Mashup - By DJ NYK - DJ Nyk, Badshah, Sachin-Jigar, AKASA, Rashmeet Kaur, Asees Kaur, Shamur (edm)",
+          "Antidote - Radio Edit - Swedish House Mafia, Knife Party (edm)"
+        ],
+        "precision": 0.8666666666666667,
+        "precisions": [
+          1.0,
+          1.0,
+          0.6
+        ],
+        "consistency": 0.17989417989417988,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Solo Dance - Martin Jensen (edm; electronic)",
+            "reason": "Like Tokyo, it is an energetic EDM track with danceable and groovy vibe tags.",
+            "flags": []
+          },
+          {
+            "song": "The Nights - Avicii (dance; edm; pop)",
+            "reason": "Like Antidote - Radio Edit, it features high energy and intense electronic production.",
+            "flags": [
+              "production"
+            ]
+          },
+          {
+            "song": "Body - Loud Luxury, Brando (edm)",
+            "reason": "Like Party Mashup, this edm track is very danceable and groovy.",
+            "flags": []
+          },
+          {
+            "song": "Moonlight - Gaullin (edm; electronic)",
+            "reason": "Like Sky High, it shares sad and moody vibe tags while maintaining high energy.",
+            "flags": []
+          },
+          {
+            "song": "Ayo Technology - Revelries (edm)",
+            "reason": "Like Tokyo, it is an energetic edm track with a groovy danceability.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "chill-hiphop",
+        "request": "chill hip hop beats to relax",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres hip-hop; moods chill, relax; energy 0.00-0.45; instrumental",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            11673,
+            12084,
+            11597,
+            11735,
+            11691
+          ],
+          [
+            11673,
+            12084,
+            11597,
+            11735,
+            11691
+          ],
+          [
+            92,
+            12084,
+            11673,
+            4107,
+            1769
+          ]
+        ],
+        "songs": [
+          "Offshore - Shubh (hip-hop)",
+          "Banking on Me - Gunna (hip-hop)",
+          "Jocelyn Flores - XXXTENTACION (hip-hop)",
+          "Aankhein - Vilen (hip-hop)",
+          "Sarkar - Jaura Phagwara (hip-hop)"
+        ],
+        "precision": 0.8666666666666667,
+        "precisions": [
+          1.0,
+          1.0,
+          0.6
+        ],
+        "consistency": 0.5,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 0.6,
+        "refine_agent_precision": 0.2,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "DESIRES - AP Dhillon, Gurinder Gill (hip-hop; pop)",
+            "reason": "Like Offshore, this track delivers a calm and groove-heavy hip-hop vibe that is very danceable.",
+            "flags": []
+          },
+          {
+            "song": "Ma Belle - AP Dhillon, Amari (hip-hop)",
+            "reason": "Like Jocelyn Flores, this song maintains a mellow and chill hip-hop atmosphere with great danceability.",
+            "flags": []
+          },
+          {
+            "song": "Chill Cassette - Siesta Beats (study)",
+            "reason": "Like Banking on Me, it features an acoustic and organic chill sound that fits the request perfectly.",
+            "flags": []
+          },
+          {
+            "song": "Haareya - Sachin-Jigar, Arijit Singh, Priya Saraiya (hip-hop)",
+            "reason": "Like Sarkar, this calm hip-hop track brings a relaxing and organic feel to the playlist.",
+            "flags": []
+          },
+          {
+            "song": "Monday Loop - Tomppabeats (chill)",
+            "reason": "Like Aankhein, this features a slow, acoustic, and mellow vibe ideal for relaxing.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "upbeat-latin",
+        "request": "upbeat latin music for dancing",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres latin, dance; moods upbeat; energy 0.70-1.00; valence 0.60-1.00",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            12895,
+            13580,
+            13544,
+            13621,
+            13045
+          ],
+          [
+            12895,
+            13580,
+            13544,
+            13621,
+            13045
+          ],
+          [
+            12895,
+            13580,
+            13544,
+            13621,
+            13045
+          ]
+        ],
+        "songs": [
+          "Take You Dancing - Jason Derulo (dance)",
+          "Dirty Dancer - Enrique Iglesias, Usher (latin)",
+          "Amarillo - J Balvin (latin; reggae)",
+          "Sofia - Alvaro Soler (latin)",
+          "Afraid - James Hype, HARLEE (dance)"
+        ],
+        "precision": 0.6,
+        "precisions": [
+          0.6,
+          0.6,
+          0.6
+        ],
+        "consistency": 1.0,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Escape - Enrique Iglesias (latin)",
+            "reason": "Like Dirty Dancer, this energetic latin track by Enrique Iglesias is upbeat and great for dancing.",
+            "flags": []
+          },
+          {
+            "song": "Ginza - J Balvin (latin; reggae)",
+            "reason": "This J Balvin song features the same energetic and happy latin style as Amarillo.",
+            "flags": []
+          },
+          {
+            "song": "La Cintura - Alvaro Soler (latin)",
+            "reason": "Like Sofia, this upbeat latin track by Alvaro Soler brings an energetic and danceable vibe.",
+            "flags": []
+          },
+          {
+            "song": "RUMBATÓN - Daddy Yankee (hip-hop; latin; reggae)",
+            "reason": "This Daddy Yankee track delivers the high energy and upbeat latin rhythm you requested.",
+            "flags": []
+          },
+          {
+            "song": "Whenever, Wherever - Shakira (latin)",
+            "reason": "Shakira's upbeat latin song matches the happy and energetic feel of your liked tracks.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "like-noah-kahan",
+        "request": "something like Noah Kahan",
+        "on_topic": true,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "genres folk, indie, singer-songwriter; moods acoustic; acoustic",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "ok",
+        "song_ids": [
+          [
+            702,
+            555,
+            488,
+            756,
+            537
+          ],
+          [
+            1231,
+            3560,
+            2696,
+            2762,
+            2678
+          ],
+          [
+            1231,
+            2759,
+            2696,
+            2762,
+            2678
+          ]
+        ],
+        "songs": [
+          "100 words - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+          "Bloom (Online Bonus Track) - The Paper Kites (folk; indie)",
+          "could you love me while i hate myself - Zeph (indie; indie-pop; singer-songwriter)",
+          "Kahaani - When Chai Met Toast (folk; indie; indie-pop)",
+          "London's Song - Matt Hartke (folk; indie; indie-pop)"
+        ],
+        "precision": 1.0,
+        "precisions": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "consistency": 0.2222222222222222,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "gemini-rerank",
+        "refine_precision": 1.0,
+        "refine_agent_precision": 1.0,
+        "rerank_invented_ids": [],
+        "gemini_reasons": [
+          {
+            "song": "Pause - Prateek Kuhad (folk; indie; indie-pop; singer-songwriter)",
+            "reason": "Like 100 words by Prateek Kuhad, this track has a calm, mellow, acoustic vibe.",
+            "flags": []
+          },
+          {
+            "song": "Coastline - Hollow Coves (folk; indie)",
+            "reason": "This folk indie song fits the organic and acoustic mood of Bloom (Online Bonus Track).",
+            "flags": []
+          },
+          {
+            "song": "Home for the Summer - Sara Kays (indie-pop; singer-songwriter)",
+            "reason": "Much like could you love me while i hate myself, this singer-songwriter track features an acoustic and organic feel.",
+            "flags": []
+          },
+          {
+            "song": "Dear August - PJ Harding, Noah Cyrus (singer-songwriter)",
+            "reason": "Like Kahaani, this song is calm, mellow, and features acoustic instruments.",
+            "flags": []
+          },
+          {
+            "song": "Stay - Gracie Abrams (indie; indie-pop)",
+            "reason": "Sharing the calm and chill acoustic vibe of London's Song, this indie track will fit your playlist.",
+            "flags": []
+          }
+        ]
+      },
+      {
+        "id": "off-topic-essay",
+        "request": "write my history essay about the french revolution",
+        "on_topic": false,
+        "plan_sources": [
+          "gemini",
+          "gemini",
+          "gemini"
+        ],
+        "plan_summary": "no filters (semantic search only)",
+        "plan_summaries": [],
+        "plan_problems": [],
+        "status": "rejected",
+        "song_ids": [
+          [],
+          [],
+          []
+        ],
+        "songs": [],
+        "precision": null,
+        "precisions": [],
+        "consistency": null,
+        "made_up_ids": [],
+        "first_check_failed": false,
+        "fixed_by_retry": false,
+        "refine_source": "",
+        "refine_precision": null,
+        "refine_agent_precision": null,
+        "rerank_invented_ids": [],
+        "gemini_reasons": []
+      }
+    ]
+  },
+  "personas": {
+    "gemini": [
+      {
+        "name": "Acoustic purist",
+        "hidden_taste": "only acoustic songs (acousticness ≥ 0.6)",
+        "plan_source": "gemini",
+        "round1": 0.6,
+        "refine_source": "gemini-rerank",
+        "shown": 1.0,
+        "agent_only": 0.6
+      },
+      {
+        "name": "Jazz head",
+        "hidden_taste": "only jazz, no indie",
+        "plan_source": "gemini",
+        "round1": 0.6,
+        "refine_source": "gemini-rerank",
+        "shown": 1.0,
+        "agent_only": 1.0
+      },
+      {
+        "name": "Latin party",
+        "hidden_taste": "only latin or reggae",
+        "plan_source": "gemini",
+        "round1": 0.0,
+        "refine_source": "gemini-rerank",
+        "shown": 0.0,
+        "agent_only": 0.0
+      },
+      {
+        "name": "Rainy-day crier",
+        "hidden_taste": "very sad and acoustic (valence < 0.3, acousticness > 0.5)",
+        "plan_source": "gemini",
+        "round1": 1.0,
+        "refine_source": "gemini-rerank",
+        "shown": 1.0,
+        "agent_only": 0.6
+      },
+      {
+        "name": "Rock gym-goer",
+        "hidden_taste": "only rock, metal or alt-rock",
+        "plan_source": "gemini",
+        "round1": 0.0,
+        "refine_source": "gemini-rerank",
+        "shown": 0.4,
+        "agent_only": 0.4
+      },
+      {
+        "name": "No-vocals studier",
+        "hidden_taste": "only instrumental (instrumentalness > 0.5)",
+        "plan_source": "gemini",
+        "round1": 0.6,
+        "refine_source": "gemini-rerank",
+        "shown": 1.0,
+        "agent_only": 0.6
+      }
+    ]
+  },
+  "rescored_from_runs": 3
+}

@@ -96,7 +96,7 @@ value = λ × score − (1 − λ) × similarity to the most similar song alread
 
 ## 5. Evaluation
 
-**Automated tests:** 133, all passing, with Gemini and Spotify mocked. They cover catalog building, parsing, retrieval, ranking, the self-check and retries, the reranker's validation of Gemini's picks (invented ids, duplicates, candidates outside the targets, failing the self-check), explainer id filtering, every Gemini error type, the feedback math, sessions, exports, HTML escaping, and a full Streamlit app run.
+**Automated tests:** 148, all passing, with Gemini and Spotify mocked. They cover catalog building, parsing, retrieval, ranking, the self-check and retries, the reranker's validation of Gemini's picks (invented ids, duplicates, candidates outside the targets, failing the self-check), explainer id filtering, every Gemini error type, the feedback math, sessions, exports, HTML escaping, and a full Streamlit app run.
 
 **Simulated users (offline, deterministic):** 6 listeners whose hidden taste differs from what they ask for vote on every song shown.
 
@@ -115,7 +115,18 @@ With 3 refine rounds the average goes 47% → 70% → 63% → 70%, so most of th
 - **Gemini vs the keyword rules:** on "rainy sunday morning with coffee", the rules read "rainy" as *sad*, while Gemini read *cozy and calm*.
 - **Reranker (`gemini-3.5-flash-lite`):** for "something like Noah Kahan" (not in the catalog), Gemini planned folk, singer-songwriter and acoustic. In the first refine run it picked a song far below the new mood target; the self-check rejected its list and the agent kept its own. After the candidates were filtered to the targets, Gemini's picks passed, and each reason referred to a liked song. One reason on another run called a jazz song "indie-jazz", which the catalog doesn't say.
 
-**Golden-prompt evaluation (pending, Phase 6):** precision@5, planner accuracy, consistency over repeated runs, how often Gemini's reasons add details not in the data, and whether Gemini's refine-round picks are liked more than the agent's own (simulated users), for both planners. It was postponed because the Gemini free-tier quota ran out during development.
+**Golden-prompt evaluation** (`python -m eval.run_eval`; 16 prompts, 15 music requests plus one off-topic, 3 runs each per planner; `gemini-3.5-flash-lite`, 17 Nov 2026, 75 Gemini calls, no failures or fallbacks):
+
+| Metric | Rules (offline) | Gemini |
+|---|---|---|
+| Precision@5 (songs meeting the prompt's genre/energy/mood rules, mean of 3 runs) | 91% | 93% |
+| Planner accuracy (plan matches the expected plan) | 88% (14/16) | 100% (16/16) |
+| Consistency (Jaccard overlap of the top 5 across 3 runs) | 1.00 | 0.52 |
+| Made-up songs shown | 0 | 0 (1 invented id caught by the reranker check) |
+| Refine-round reasons with details not in the data | n/a (templates) | 4 of 74 |
+| Refine round, simulated users: Gemini's picks vs the agent's own | n/a | 73% vs 53% liked |
+
+Precision@5 counts a song only if it meets every rule for its prompt (e.g. latin *and* valence 0.6–1.0), then averages correct ÷ 5 over prompts and runs. The rules planner failed on wording ("nothing too loud" read as high energy; no genre found for "something like Noah Kahan"). Gemini planned every prompt correctly, but its weakest prompt was "upbeat latin music for dancing" (60%: it added *dance* songs). All 74 Gemini reasons were also read by hand: no invented years, lyrics or awards; the 4 flagged ones use loose words ("classic", "hits", "electronic production", "EDM-pop"). With hidden tastes, Gemini's refine picks were liked more than the agent's own (73% vs 53%), mostly for listeners whose taste wasn't in the request.
 
 ---
 
@@ -125,7 +136,7 @@ With 3 refine rounds the average goes 47% → 70% → 63% → 70%, so most of th
 - **Labels stand in for listening.** "Sad", "calm" or "acoustic" come from thresholds on audio features and noisy genre tags, not from hearing the song. A song can be tagged "calm" and still feel tense.
 - **Feedback narrows, it doesn't explore.** Relevance feedback moves toward what was liked. It reduces repetition (MMR, no repeats) but it can deepen a filter bubble, and it can't recover if the first 5 songs miss entirely.
 - **Uneven quality across requests.** Genres with few songs (latin, jazz) get weaker, less varied results than genres with many.
-- **The LLM adds variance.** The same request can get a slightly different Gemini plan, so 1–2 songs may change between runs.
+- **The LLM adds variance.** Across 3 runs of the same request, only about half of Gemini's top 5 stayed the same (Jaccard 0.52), even at temperature 0. The songs still fit the request (89–96% precision per run), but a listener asking twice can get a different list.
 - **Gemini's reasons can drift.** Gemini only receives catalog facts, but one earlier run still described a song as having "smooth vocals", which isn't in the data. Round-1 reasons now come from templates, so this only affects the refine round's picks.
 - **Hand-set weights.** The ranking weights, λ and the feedback weights weren't tuned on real listener data.
 
@@ -171,7 +182,7 @@ The lesson: the assistant was fast and thorough, but I still had to verify with 
 
 ## 8. Future work
 
-- Finish the golden-prompt evaluation (Phase 6) and tune the ranking weights against it.
+- Tune the ranking weights against the golden-prompt evaluation, add more golden prompts (especially genres where Gemini mixed in neighbors, like latin vs dance), and cache Gemini's answers so re-running it costs no quota.
 - A catalog with lesser-known artists, cleaner genres, lyrics and language.
 - An exploration slot in each round, so feedback can discover, not just narrow.
 - A hosted demo on Streamlit Community Cloud, with the Gemini usage cap per visitor.
