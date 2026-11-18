@@ -84,8 +84,7 @@ flowchart TB
         SIM["Simulated user<br/>feedback lift<br/>per round"]
     end
 
-    USER --> GUARD
-    GUARD -- "rejected: ask<br/>to rephrase" --> USER
+    USER <-- "request in;<br/>rejected: ask<br/>to rephrase" --> GUARD
     DB --> RET
     EXPL --> SHOW
     FB -- "playlist so far +<br/>5 new songs" --> RET
