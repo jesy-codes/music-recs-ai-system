@@ -36,72 +36,9 @@ You type *"recommend something chill, with jazz and indie music"*, and the agent
 
 ## System Architecture
 
-Source: [diagrams/system_architecture.mmd](diagrams/system_architecture.mmd). Section colors: gray = data, purple = AI agent, amber = human review, green = testing. Solid arrows are data flow; dashed arrows are testing.
+![System architecture: input, playlist agent, human review, output, with offline data and testing](diagrams/system_architecture_slide.svg)
 
-```mermaid
-flowchart TB
-    USER@{ shape: bang, label: "<b style='font-size:22px'>Input</b><br/>user request:<br/>'something chill,<br/>with jazz and indie'" }
-
-    subgraph DATA["<b style='font-size:20px'>Data, built offline</b>"]
-        direction TB
-        RAW[("Spotify Tracks<br/>Dataset, 114k rows")]
-        BUILD["Catalog builder<br/>dedupe, sample genres,<br/>vibe tags, embeddings"]
-        DB[("Catalog<br/>16,120 songs +<br/>embeddings")]
-        RAW --> BUILD --> DB
-    end
-
-    subgraph AGENT["<b style='font-size:20px'>Process: playlist agent</b>"]
-        direction TB
-        GUARD{"Input<br/>guardrail"}
-        PLAN["Planner<br/>Gemini: request to<br/>search query"]
-        RET["Retriever<br/>embeddings + keywords"]
-        RANK["Ranker<br/>audio features +<br/>diversity"]
-        CHECK{"Self-check<br/>genre, energy,<br/>count, variety"}
-        EXPL["Reasons<br/>from song data only"]
-        RERANK["Gemini reranker<br/>refine round: picks 5<br/>of 30 using 👍/👎"]
-        GUARD -- valid --> PLAN --> RET --> RANK --> CHECK
-        CHECK -- "fails: adjust,<br/>max 2 retries" --> RET
-        CHECK -- passes --> EXPL
-        CHECK -- "refine round" --> RERANK
-        RERANK -- "self-check<br/>Gemini's picks" --> EXPL
-    end
-
-    subgraph HUMAN["<b style='font-size:20px'>Human review</b>"]
-        direction TB
-        SHOW["5 proposed songs<br/>preview + reason"]
-        VOTE{{"User votes<br/>thumbs up / down"}}
-        FB["Feedback update<br/>toward liked songs,<br/>away from rejected"]
-        SHOW --> VOTE
-        VOTE -- refine --> FB
-    end
-
-    OUT@{ shape: bang, label: "<b style='font-size:22px'>Output</b><br/>final playlist:<br/>liked songs only,<br/>CSV or Spotify link" }
-
-    subgraph TEST["<b style='font-size:20px'>Testing and evaluation</b>"]
-        direction TB
-        UNIT["Unit tests<br/>pytest, Gemini and<br/>Spotify mocked"]
-        EVAL["Evaluator<br/>golden prompts,<br/>precision@5, logs"]
-        SIM["Simulated user<br/>feedback lift<br/>per round"]
-    end
-
-    USER <-- "request in;<br/>rejected: ask<br/>to rephrase" --> GUARD
-    DB --> RET
-    EXPL --> SHOW
-    FB -- "playlist so far +<br/>5 new songs" --> RET
-    VOTE -- done --> OUT
-
-    UNIT -.-> AGENT
-    EVAL -.-> AGENT
-    SIM -.-> VOTE
-
-    classDef default fill:#FFFFFF,stroke:#888780,color:#2C2C2A
-    style DATA  fill:#F1EFE8,stroke:#5F5E5A,color:#2C2C2A
-    style AGENT fill:#EEEDFE,stroke:#534AB7,color:#26215C
-    style HUMAN fill:#FAEEDA,stroke:#854F0B,color:#412402
-    style TEST  fill:#E1F5EE,stroke:#0F6E56,color:#04342C
-    style USER  fill:#FAC775,stroke:#633806,color:#412402
-    style OUT   fill:#EAF3DE,stroke:#3B6D11,color:#173404
-```
+Section colors: gray = data, purple = AI agent, amber = human review, green = testing. Solid arrows are data flow; dashed arrows are testing. The image is drawn by [diagrams/make_slide_diagram.py](diagrams/make_slide_diagram.py) (`python3 diagrams/make_slide_diagram.py`); the Mermaid source is [diagrams/system_architecture.mmd](diagrams/system_architecture.mmd).
 
 ### Components
 
@@ -638,7 +575,8 @@ src/
   catalog.py      catalog + embeddings builder  simulator.py  simulated users
   cli.py          command line                  query.py      search plan types
 data/             songs.csv, embeddings.npy, catalog_meta.json
-diagrams/         system_architecture.mmd
+diagrams/         system_architecture.mmd, system_architecture_slide.svg (README image),
+                  make_slide_diagram.py (draws the SVG)
 docs/             images/ (screenshots, Figma mockup)
 eval/             golden_prompts.json, run_eval.py, results.json (latest run)
 tests/            148 tests
